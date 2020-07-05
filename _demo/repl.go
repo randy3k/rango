@@ -1,7 +1,7 @@
 package main
 
 import (
-	"rango"
+	"github.com/randy3k/rango"
 	"fmt"
 )
 

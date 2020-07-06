@@ -1,0 +1,63 @@
+before:
+  hooks:
+    - go mod download
+builds:
+- id: rango-windows-amd64
+  binary: rango
+  main: ./cmd/rango/main.go
+  env:
+    - CGO_ENABLED=1
+    - CC=x86_64-w64-mingw32-gcc
+    - CXX=x86_64-w64-mingw32-g++
+  goos:
+    - windows
+  goarch:
+    - amd64
+- id: build-windows-386
+  binary: rango
+  main: ./cmd/rango/main.go
+  env:
+    - CGO_ENABLED=1
+    - CC=i686-w64-mingw32-gcc
+    - CXX=i686-w64-mingw32-g++
+  goos:
+    - windows
+  goarch:
+    - 386
+- id: build-darwin
+  binary: rango
+  main: ./cmd/rango/main.go
+  env:
+    - CGO_ENABLED=1
+    - CC=o64-clang
+    - CXX=o64-clang++
+  goos:
+    - darwin
+  goarch:
+    - amd64
+- id: build-linux
+  binary: rango
+  main: ./cmd/rango/main.go
+  env:
+    - CGO_ENABLED=1
+  goos:
+    - linux
+  goarch:
+    - 386
+    - amd64
+    - arm
+    - arm64
+archives:
+- replacements:
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'

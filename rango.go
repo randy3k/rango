@@ -1,5 +1,6 @@
 package rango
 
+// #cgo linux LDFLAGS: -Wl,--no-as-needed -ldl
 // #include <rango.h>
 import "C"
 import (

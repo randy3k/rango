@@ -4,19 +4,42 @@ package rango
 // #include <callbacks.h>
 import "C"
 import (
-	"bufio"
-	"fmt"
-	"os"
+	// "fmt"
 	"unsafe"
 )
 
+type SEXP unsafe.Pointer
+
+type CallbacksDef struct {
+	Suicide func(p string)
+	ShowMessage func(p string)
+	ReadConsole func(p string, add_history bool) string
+	WriteConsole func(p string, otype int)
+	ResetConsole func()
+	FlushConsole func()
+	ClearerrConsole func()
+	Busy func(int)
+	Cleanup func(int, int, int)
+	ShowFiles func(int, []string, []string, string, bool, string) int
+	ChooseFile func(int, string, int) int
+	EditFile func(string) int
+	Loadhistory func(SEXP, SEXP, SEXP, SEXP)
+	Savehistory func(SEXP, SEXP, SEXP, SEXP)
+	Addhistory func(SEXP, SEXP, SEXP, SEXP)
+	EditFiles func(int, []string, []string, string) int
+	DoSelectlist func(SEXP, SEXP, SEXP, SEXP) SEXP
+	DoDataentry func(SEXP, SEXP, SEXP, SEXP) SEXP
+	DoDataviewer func(SEXP, SEXP, SEXP, SEXP) SEXP
+	ProcessEvents func()
+	PolledEvents func()
+	YesNoCancel func(string) int
+}
+
+var Callbacks CallbacksDef
+
 //export GoReadConsole
 func GoReadConsole(p *C.char, buf *C.uchar, buflen C.int, add_history C.int) C.int {
-	fmt.Print(C.GoString(p))
-	text, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-	if len(text) > 0 {
-		text = text[0:(len(text) - 1)]
-	}
+	text := Callbacks.ReadConsole(C.GoString(p), add_history == 1)
 	cs := C.CString(text)
 	defer C.free(unsafe.Pointer(cs))
 	n := len(text)
@@ -29,6 +52,18 @@ func GoReadConsole(p *C.char, buf *C.uchar, buflen C.int, add_history C.int) C.i
 }
 
 
+//export GoWriteConsole
+func GoWriteConsole(p *C.char, bufline C.int, otype C.int) {
+	Callbacks.WriteConsole(C.GoString(p), int(otype))
+}
+
+
 func SetCallbacks() {
-	C.rango_set_callback(C.CString("ptr_R_ReadConsole"), C.rango_read_console)
+	if Callbacks.ReadConsole != nil {
+		C.rango_set_callback(C.CString("ptr_R_ReadConsole"), C.rango_read_console)
+	}
+	if Callbacks.WriteConsole != nil {
+		C.rango_set_callback(C.CString("ptr_R_WriteConsole"), nil)
+		C.rango_set_callback(C.CString("ptr_R_WriteConsoleEx"), C.rango_write_console)
+	}
 }

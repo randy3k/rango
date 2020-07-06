@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/randy3k/rango"
-	"fmt"
 )
 
 func main() {
@@ -12,6 +11,6 @@ func main() {
 	} else if (!ok) {
 		panic("R was not initialized")
 	}
-	fmt.Println("hello")
-
+	rango.SetCallbacks()
+	rango.RunREPL()
 }

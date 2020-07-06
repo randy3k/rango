@@ -637,3 +637,25 @@ int rango_load_constants() {
 
     return 1;
 }
+
+
+int rango_init(int ac, char **av) {
+  return Rf_initialize_R(ac, av);
+}
+
+void rango_setuploop(void) {
+  setup_Rmainloop();
+}
+
+void rango_runloop(void) {
+  run_Rmainloop();
+}
+
+void rango_set_callback(char* name, void* cb) {
+    void** p;
+    if (load_symbol(name, (void**) &p)) {
+        *p = cb;
+    } else {
+        printf("error setting callback of %s\n", name);
+    }
+}

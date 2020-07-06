@@ -19,4 +19,10 @@ int rango_is_initialized(void);
 int rango_load_symbols(void);
 int rango_load_constants(void);
 
+
+int rango_init(int ac, char **av);
+void rango_setuploop(void);
+void rango_runloop(void);
+void rango_set_callback(char* name, void* cb);
+
 #endif /* end of include guard: RANGO_H__ */

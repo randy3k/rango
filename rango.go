@@ -1,7 +1,6 @@
 package rango
 
 // #include <rango.h>
-// #include <interface.h>
 import "C"
 import (
 	"errors"
@@ -78,4 +77,8 @@ func GetRhome() string {
 
 func DefaultArgs() []string {
 	return []string{"rango", "--quiet", "--no-save"}
+}
+
+func RunREPL() {
+	C.rango_runloop()
 }

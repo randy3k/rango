@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"github.com/randy3k/rango"
@@ -7,7 +7,7 @@ import (
 	"bufio"
 )
 
-func main() {
+func Run() {
 	ok, err := rango.Initialize(rango.GetRhome(), rango.DefaultArgs())
 	if (err != nil) {
 		panic(err)

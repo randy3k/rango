@@ -28,7 +28,7 @@ func Initialize(Rhome string, args []string) (bool, error) {
 	defer C.free(cargs_t)
 
 	for i, a := range args {
-		p := (**C.char)(unsafe.Pointer(uintptr(cargs_t) + uintptr(i) * sz))
+		p := (**C.char)(unsafe.Pointer(uintptr(cargs_t) + uintptr(i)*sz))
 		ca := C.CString(a)
 		defer C.free(unsafe.Pointer(ca))
 		*p = ca
@@ -58,13 +58,12 @@ func Initialize(Rhome string, args []string) (bool, error) {
 	return IsInitialized(), nil
 }
 
-
 func IsInitialized() bool {
 	return C.rango_is_initialized() == 1
 }
 
 func GetRhome() string {
-	if rhome, ok := os.LookupEnv("R_HOME"); ok{
+	if rhome, ok := os.LookupEnv("R_HOME"); ok {
 		return rhome
 	}
 

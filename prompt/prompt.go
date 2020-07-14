@@ -7,35 +7,42 @@ import (
 	// "runtime"
 )
 
-type PromptApp struct {
+type Prompt struct {
 	quit bool
 }
 
-func (p *PromptApp) Run(message string) {
+func NewPrompt() *Prompt {
+	p := &Prompt{}
+	return p
+}
+
+func (p *Prompt) Show(message string) {
 	p.quit = false
 	// go func() {
-	// 	fmt.Printf("%v\r\n", runtime.NumGoroutine())
+	// 	printf("%v\r\n", runtime.NumGoroutine())
 	// }()
 
 	t := NewTerminal()
 	kbInput := t.Start()
-	defer t.Fini()
+	defer t.Stop()
 
 	parser := NewParser()
 	keyPress := parser.Start()
-	defer parser.Fini()
+	defer parser.Stop()
 
-	kproc := NewKeyProcessor(DefaultBindings())
-	kproc.Start()
-	defer kproc.Fini()
+	kproc := NewKeyProcessor(PromptBindings(p))
+	keyPressEvent := kproc.Start()
+	defer kproc.Stop()
 
 	// loop:
 	for !p.quit {
 		select {
-		case input := <-kbInput:
-			parser.Feed(input)
+		case ev := <-keyPressEvent:
+			ev.Handler(ev.Keys, ev.Data)
 		case kp := <-keyPress:
 			kproc.Feed(kp)
+		case input := <-kbInput:
+			parser.Feed(input)
 		}
 	}
 }

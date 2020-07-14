@@ -3,51 +3,51 @@ package prompt
 import (
 	"sync"
 	"time"
+
+	"github.com/randy3k/rango/prompt/infchan"
 )
 
+type KeyPress struct {
+	Key Key
+	Data []rune
+}
+
 type Parser struct {
-	ch   chan KeyPress
 	paste_mode bool
 
-	buffer        []KeyPress
-	deliver    chan struct{}
-
-	rune       chan rune
-	quit       chan struct{}
+	input     *infchan.InfChan
+	output   chan *KeyPress
 	flush      chan struct{}
+	quit       chan struct{}
 	ttimeoutlen time.Duration
 
 	mu sync.Mutex
 }
 
 func NewParser() *Parser {
-	p := &Parser{}
-	p.Init()
+	p := &Parser{
+		input: infchan.NewInfChan(),
+		output: make(chan *KeyPress),
+		flush: make(chan struct{}),
+		quit: make(chan struct{}),
+		ttimeoutlen: 50 * time.Millisecond,
+	}
 	return p
 }
 
-func (p *Parser) Init() {
-	p.ch = make(chan KeyPress)
-	p.deliver = make(chan struct{})
-	p.rune = make(chan rune)
-	p.quit = make(chan struct{})
-	p.flush = make(chan struct{})
-	p.ttimeoutlen = time.Duration(50) * time.Millisecond
-}
-
-func (p *Parser) Fini() {
+func (p *Parser) Stop() {
 	close(p.quit)
+	p.input.Close()
 }
 
-func (p *Parser) Start() <-chan KeyPress {
+func (p *Parser) Start() <-chan *KeyPress {
 	go p.parseLoop()
-	go p.deliverLoop()
-	return p.ch
+	return p.output
 }
 
 func (p *Parser) Feed(input []rune) {
 	for _, x := range input {
-		p.rune <- x
+		p.input.In <- x
 	}
 }
 
@@ -60,19 +60,8 @@ func (p *Parser) SetFlushTimeout(d int) {
 }
 
 
-func (p *Parser) appendBuffer(kp KeyPress) {
-	p.mu.Lock()
-	p.buffer = append(p.buffer, kp)
-	p.mu.Unlock()
-	select {
-	case p.deliver <- struct{}{}:
-	default:
-	}
-}
-
-
 func (p *Parser) parseLoop() {
-	prefix := ""
+	prefix := []rune{}
 	retry := false
 	flushing := false
 	flushTimer := time.AfterFunc(p.ttimeoutlen, p.Flush)
@@ -88,18 +77,18 @@ loop:
 			case <-p.flush:
 				// stop flushTimer in case of mannual flush
 				flushTimer.Stop()
-				if prefix == "" {
+				if len(prefix) == 0 {
 					// nothing to flush
 					continue
 				}
 				flushing = true
-			case r := <-p.rune:
+			case r := <-p.input.Out:
 				flushTimer.Stop()
-				prefix += string(r)
+				prefix = append(prefix, r.(rune))
 			}
 		}
 
-		if !flushing && is_ansi_prefix(prefix) {
+		if !flushing && isPrefixOfANSI(string(prefix)) {
 			flushTimer.Reset(p.ttimeoutlen)
 			continue
 		}
@@ -108,9 +97,9 @@ loop:
 
 		// longest match
 		for i := len(prefix); i > 0; i-- {
-			if key, ok := ANSIKeyMap[prefix[:i]]; ok {
+			if key, ok := ANSIKeyMap[string(prefix[:i])]; ok {
 				for _, v := range key {
-					p.appendBuffer(KeyPress{Key: v, Data: nil})
+					p.output <- &KeyPress{Key: v, Data: nil}
 				}
 				found = i
 				break
@@ -119,53 +108,20 @@ loop:
 
 		if found >= 0 {
 			prefix = prefix[found:]
-			if prefix != "" {
+			if len(prefix) > 0 {
 				retry = true
 			}
-		} else if prefix != "" {
-			// consume the first byte finally
-			p.appendBuffer(KeyPress{Key: Key(prefix[0]), Data: nil})
+		} else if len(prefix) > 0 {
+			// consume the first rune finally
+			p.output <- &KeyPress{Key: Key(prefix[0]), Data: nil}
 			prefix = prefix[1:]
-			if prefix != "" {
+			if len(prefix) > 0 {
 				retry = true
 			}
 		}
 
-		if flushing && prefix == "" {
+		if flushing && len(prefix) == 0 {
 			flushing = false
-		}
-	}
-}
-
-// it is needed because writing to output channel may be blocking
-func (p *Parser) deliverLoop() {
-loop:
-	for {
-		select {
-		case <-p.deliver:
-			for {
-				p.mu.Lock()
-				buffer := make([]KeyPress, len(p.buffer))
-				copy(buffer, p.buffer)
-				p.buffer = nil
-				p.mu.Unlock()
-				for _, v := range buffer {
-					select {
-					case p.ch <- v:
-						continue
-					case <-p.quit:
-						break loop
-					}
-				}
-				p.mu.Lock()
-				done := len(p.buffer) == 0
-				p.mu.Unlock()
-				if done {
-					break
-				}
-			}
-		case <-p.quit:
-			break loop
 		}
 	}
 }

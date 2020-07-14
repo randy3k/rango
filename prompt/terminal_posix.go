@@ -30,11 +30,11 @@ type Terminal struct {
 
 func NewTerminal() *Terminal {
 	t := &Terminal{}
-	t.Init()
+	t.init()
 	return t
 }
 
-func (t *Terminal) Init() error {
+func (t *Terminal) init() error {
 	var e error
 
 	t.input = make(chan []rune)
@@ -55,7 +55,7 @@ func (t *Terminal) Init() error {
 	return nil
 }
 
-func (t *Terminal) Fini() error {
+func (t *Terminal) Stop() error {
 	close(t.quit)
 	t.tty.Close()
 	t.cleanup()

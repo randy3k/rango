@@ -122,7 +122,7 @@ var KeyAliasMap = map[Key]Key {
 
 const (
 	// special Key to allow key processor to flush all pending keypresses
-	Flush Key = "flush"
+	Flush Key = "<flush>"
 )
 
 var CtrlKeyMap = map[string]([]Key) {
@@ -274,17 +274,11 @@ func init() {
 }
 
 // TODO: memoize
-func is_ansi_prefix(s string) bool {
+func isPrefixOfANSI(s string) bool {
 	for k := range ANSIKeyMap {
 		if s != k && strings.HasPrefix(k, s) {
 			return true
 		}
 	}
 	return false
-}
-
-
-type KeyPress struct {
-	Key Key
-	Data []rune
 }

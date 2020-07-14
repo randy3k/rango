@@ -5,8 +5,8 @@ import (
 )
 
 func main() {
-	p := prompt.PromptApp{}
+	p := prompt.NewPrompt()
 	// for i := 0; i < 100; i++ {
-	p.Run("> ")
+	p.Show("> ")
 	// }
 }

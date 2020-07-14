@@ -1,48 +1,64 @@
 package prompt
 
-func PromptBindings(p *Prompt) *KeyBindings {
+func (p *Prompt) Bindings() *KeyBindings {
 	b := KeyBindings{
-		Bindings: []*Binding{
-			{
-				Keys: []Key{Escape},
-				Handler: func(key []Key, data []rune) {
-					print("esc\r\n")
-				},
+		{
+			Keys: []Key{Escape},
+			Handler: func(event *Event) {
+				print("[escape]\r\n")
 			},
-			{
-				Keys: []Key{Escape, Any},
-				Handler: func(key []Key, data []rune) {
-					printf("%v\r\n", key)
-				},
-			},
-			{
-				Keys: []Key{ControlA},
-				Handler: func(key []Key, data []rune) {
-					print("[c-a]\r\n")
-				},
-			},
-			{
-				Keys: []Key{Enter},
-				Handler: func(key []Key, data []rune) {
-					print("\r\n")
-				},
-			},
-			{
-				Keys: []Key{"q"},
-				Handler: func(key []Key, data []rune) {
-					print("bye!\r\n")
-					p.quit = true
-				},
-			},
-			// {
-			// 	Keys: []Key{Any},
-			// 	Handler: func(key []Key, data []rune) {
-			// 		for _, k := range key {
-			// 			print(k)
-			// 		}
-			// 	},
-			// },
 		},
+		{
+			Keys: []Key{Escape, "b"},
+			Handler: func(event *Event) {
+				printf("%v\r\n", event.Keys)
+			},
+		},
+		{
+			Keys: []Key{Escape, "f"},
+			Handler: func(event *Event) {
+				printf("%v\r\n", event.Keys)
+			},
+		},
+		{
+			Keys: []Key{ControlA},
+			Handler: func(event *Event) {
+				print("[c-a]\r\n")
+			},
+		},
+		{
+			Keys: []Key{Enter},
+			Handler: func(event *Event) {
+				print("\r\n")
+			},
+		},
+		{
+			Keys: []Key{Left},
+			Handler: func(event *Event) {
+				printf("%v\r\n", event.Keys)
+			},
+		},
+		{
+			Keys: []Key{Right},
+			Handler: func(event *Event) {
+				printf("%v\r\n", event.Keys)
+			},
+		},
+		{
+			Keys: []Key{"q"},
+			Handler: func(event *Event) {
+				print("bye!\r\n")
+				p.quit = true
+			},
+		},
+		// {
+		// 	Keys: []Key{Any},
+		// 	Handler: func(event *Event) {
+		// 		for _, k := range key {
+		// 			print(k)
+		// 		}
+		// 	},
+		// },
 	}
 
 	return &b

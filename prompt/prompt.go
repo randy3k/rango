@@ -30,15 +30,17 @@ func (p *Prompt) Show(message string) {
 	keyPress := parser.Start()
 	defer parser.Stop()
 
-	kproc := NewKeyProcessor(PromptBindings(p))
-	keyPressEvent := kproc.Start()
+	kproc := NewKeyProcessor(p.Bindings())
+	kbDispatch := kproc.Start()
 	defer kproc.Stop()
 
 	// loop:
 	for !p.quit {
+		// caution: the case handler must not block
 		select {
-		case ev := <-keyPressEvent:
-			ev.Handler(ev.Keys, ev.Data)
+		case dispatch := <-kbDispatch:
+			hand := dispatch.Binding.Handler.(func(*Event))
+			hand(&Event{Keys: dispatch.Binding.Keys, Data: dispatch.Data, Prompt: p})
 		case kp := <-keyPress:
 			kproc.Feed(kp)
 		case input := <-kbInput:

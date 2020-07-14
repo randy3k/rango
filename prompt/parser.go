@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/randy3k/rango/prompt/infchan"
+	"github.com/randy3k/rango/infchan"
 )
 
 type KeyPress struct {

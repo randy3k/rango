@@ -2,18 +2,19 @@ package prompt
 
 import (
 	"time"
+
+	"github.com/randy3k/rango/infchan"
 )
 
-type KeyPressEvent struct {
-	Keys []Key
+type KeyBindDispatch struct {
+	Binding *KeyBinding
 	Data []rune
-	Handler BindingHandler
 }
 
 type KeyProcessor struct {
 	bindings *KeyBindings
-	kp   chan *KeyPress
-	event chan *KeyPressEvent
+	kp   *infchan.InfChan
+	event chan *KeyBindDispatch
 	flush chan struct{}
 	quit chan struct{}
 
@@ -23,8 +24,8 @@ type KeyProcessor struct {
 func NewKeyProcessor(bindings *KeyBindings) *KeyProcessor {
 	p := &KeyProcessor{
 		bindings: bindings.Normalize(),
-		kp: make(chan *KeyPress),
-		event: make(chan *KeyPressEvent),
+		kp: infchan.NewInfChan(),
+		event: make(chan *KeyBindDispatch),
 		flush: make(chan struct{}),
 		quit: make(chan struct{}),
 		timeoutlen: time.Second,
@@ -36,13 +37,13 @@ func (p *KeyProcessor) Stop() {
 	close(p.quit)
 }
 
-func (p *KeyProcessor) Start() <-chan *KeyPressEvent{
+func (p *KeyProcessor) Start() <-chan *KeyBindDispatch{
 	go p.processLoop()
 	return p.event
 }
 
 func (p *KeyProcessor) Feed(kp *KeyPress) {
-	p.kp <- kp
+	p.kp.In <- kp
 }
 
 func (p *KeyProcessor) Flush() {
@@ -71,15 +72,16 @@ loop:
 					continue
 				}
 				flushing = true
-			case kp := <-p.kp:
-				prefix = append(prefix, kp.Key)
+			case kp := <-p.kp.Out:
+				prefix = append(prefix, kp.(*KeyPress).Key)
 			}
 		}
 
 		// eager keybindings
 		if binding, ok := p.bindings.Get(prefix, true); ok {
-			p.event <- &KeyPressEvent{Keys: prefix, Handler: binding.Handler}
+			p.event <- &KeyBindDispatch{Binding: binding}
 			prefix = nil
+			flushing = false
 			continue
 		}
 
@@ -93,7 +95,7 @@ loop:
 		// longest match
 		for i := len(prefix); i > 0; i-- {
 			if binding, ok := p.bindings.Get(prefix[:i], false); ok {
-				p.event <- &KeyPressEvent{Keys: prefix, Handler: binding.Handler}
+				p.event <- &KeyBindDispatch{Binding: binding}
 				found = i
 				break
 			}
@@ -105,7 +107,7 @@ loop:
 				retry = true
 			}
 		} else if len(prefix) > 0 {
-			// discard the first keypress
+			// discard the first key
 			prefix = prefix[1:]
 			if len(prefix) > 0 {
 				retry = true

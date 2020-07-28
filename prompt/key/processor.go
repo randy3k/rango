@@ -1,4 +1,4 @@
-package prompt
+package key
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 	"github.com/randy3k/rango/infchan"
 )
 
-type KeyBindDispatch struct {
+type KeyBindingDispatch struct {
 	Binding *KeyBinding
 	Data []rune
 }
@@ -14,7 +14,7 @@ type KeyBindDispatch struct {
 type KeyProcessor struct {
 	bindings *KeyBindings
 	kp   *infchan.InfChan
-	event chan *KeyBindDispatch
+	event chan *KeyBindingDispatch
 	flush chan struct{}
 	quit chan struct{}
 
@@ -25,7 +25,7 @@ func NewKeyProcessor(bindings *KeyBindings) *KeyProcessor {
 	p := &KeyProcessor{
 		bindings: bindings.Normalize(),
 		kp: infchan.NewInfChan(),
-		event: make(chan *KeyBindDispatch),
+		event: make(chan *KeyBindingDispatch),
 		flush: make(chan struct{}),
 		quit: make(chan struct{}),
 		timeoutlen: time.Second,
@@ -37,7 +37,7 @@ func (p *KeyProcessor) Stop() {
 	close(p.quit)
 }
 
-func (p *KeyProcessor) Start() <-chan *KeyBindDispatch{
+func (p *KeyProcessor) Start() <-chan *KeyBindingDispatch{
 	go p.processLoop()
 	return p.event
 }
@@ -79,7 +79,7 @@ loop:
 
 		// eager keybindings
 		if binding, ok := p.bindings.Get(prefix, true); ok {
-			p.event <- &KeyBindDispatch{Binding: binding}
+			p.event <- &KeyBindingDispatch{Binding: binding}
 			prefix = nil
 			flushing = false
 			continue
@@ -95,7 +95,7 @@ loop:
 		// longest match
 		for i := len(prefix); i > 0; i-- {
 			if binding, ok := p.bindings.Get(prefix[:i], false); ok {
-				p.event <- &KeyBindDispatch{Binding: binding}
+				p.event <- &KeyBindingDispatch{Binding: binding}
 				found = i
 				break
 			}

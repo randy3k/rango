@@ -1,3 +1,3 @@
-package prompt
+package key
 
 type Context (func() bool)

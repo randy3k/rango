@@ -1,4 +1,4 @@
-package prompt
+package key
 
 import (
 	"sync"
@@ -12,7 +12,7 @@ type KeyPress struct {
 	Data []rune
 }
 
-type Parser struct {
+type KeyParser struct {
 	paste_mode bool
 
 	input     *infchan.InfChan
@@ -24,8 +24,8 @@ type Parser struct {
 	mu sync.Mutex
 }
 
-func NewParser() *Parser {
-	p := &Parser{
+func NewKeyParser() *KeyParser {
+	p := &KeyParser{
 		input: infchan.NewInfChan(),
 		output: make(chan *KeyPress),
 		flush: make(chan struct{}),
@@ -35,32 +35,32 @@ func NewParser() *Parser {
 	return p
 }
 
-func (p *Parser) Stop() {
+func (p *KeyParser) Stop() {
 	close(p.quit)
 	p.input.Close()
 }
 
-func (p *Parser) Start() <-chan *KeyPress {
+func (p *KeyParser) Start() <-chan *KeyPress {
 	go p.parseLoop()
 	return p.output
 }
 
-func (p *Parser) Feed(input []rune) {
+func (p *KeyParser) Feed(input []rune) {
 	for _, x := range input {
 		p.input.In <- x
 	}
 }
 
-func (p *Parser) Flush() {
+func (p *KeyParser) Flush() {
 	p.flush <- struct{}{}
 }
 
-func (p *Parser) SetFlushTimeout(d int) {
+func (p *KeyParser) SetFlushTimeout(d int) {
 	p.ttimeoutlen = time.Duration(d) * time.Millisecond
 }
 
 
-func (p *Parser) parseLoop() {
+func (p *KeyParser) parseLoop() {
 	prefix := []rune{}
 	retry := false
 	flushing := false
@@ -97,7 +97,7 @@ loop:
 
 		// longest match
 		for i := len(prefix); i > 0; i-- {
-			if key, ok := ANSIKeyMap[string(prefix[:i])]; ok {
+			if key, ok := aNSIKeyMap[string(prefix[:i])]; ok {
 				for _, v := range key {
 					p.output <- &KeyPress{Key: v, Data: nil}
 				}

@@ -1,15 +1,16 @@
-package prompt
+package key
 
 type KeyBinding struct {
 	Keys    []Key
+	// we use interface{} because we don't want to fix the function signatures
 	Handler interface{}
-	Ctx     []Context
+	Context     []Context
 	Eager   bool
 }
 
 // TODO: cache context
 func (kb *KeyBinding) Enabled() bool {
-	for _, v := range kb.Ctx {
+	for _, v := range kb.Context {
 		if !v() {
 			return false
 		}
@@ -45,7 +46,7 @@ func (kb *KeyBinding) Copy() *KeyBinding {
 	return &KeyBinding{
 		Keys: append([]Key{}, kb.Keys...),
 		Handler: kb.Handler,
-		Ctx: append([]Context{}, kb.Ctx...),
+		Context: append([]Context{}, kb.Context...),
 		Eager: kb.Eager,
 	}
 }
@@ -53,7 +54,7 @@ func (kb *KeyBinding) Copy() *KeyBinding {
 func (kb *KeyBinding) Normalize() *KeyBinding {
 	newkb := kb.Copy()
 	for i, k := range newkb.Keys {
-		if newk, ok := KeyAliasMap[k]; ok {
+		if newk, ok := keyAliasMap[k]; ok {
 			newkb.Keys[i] = newk
 		}
 	}

@@ -5,6 +5,7 @@ package prompt
 import (
 	// "fmt"
 	// "runtime"
+	. "github.com/randy3k/rango/prompt/key"
 )
 
 type Prompt struct {
@@ -26,13 +27,13 @@ func (p *Prompt) Show(message string) {
 	kbInput := t.Start()
 	defer t.Stop()
 
-	parser := NewParser()
-	keyPress := parser.Start()
-	defer parser.Stop()
+	kParser := NewKeyParser()
+	keyPress := kParser.Start()
+	defer kParser.Stop()
 
-	kproc := NewKeyProcessor(p.Bindings())
-	kbDispatch := kproc.Start()
-	defer kproc.Stop()
+	kProcessor := NewKeyProcessor(p.Bindings())
+	kbDispatch := kProcessor.Start()
+	defer kProcessor.Stop()
 
 	// loop:
 	for !p.quit {
@@ -42,9 +43,9 @@ func (p *Prompt) Show(message string) {
 			hand := dispatch.Binding.Handler.(func(*Event))
 			hand(&Event{Keys: dispatch.Binding.Keys, Data: dispatch.Data, Prompt: p})
 		case kp := <-keyPress:
-			kproc.Feed(kp)
+			kProcessor.Feed(kp)
 		case input := <-kbInput:
-			parser.Feed(input)
+			kParser.Feed(input)
 		}
 	}
 }

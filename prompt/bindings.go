@@ -1,5 +1,9 @@
 package prompt
 
+import (
+	. "github.com/randy3k/rango/prompt/key"
+)
+
 func (p *Prompt) Bindings() *KeyBindings {
 	b := KeyBindings{
 		{

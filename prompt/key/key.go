@@ -1,4 +1,4 @@
-package prompt
+package key
 
 import (
 	"strings"
@@ -113,7 +113,7 @@ const (
 	Tab Key = "tab"
 )
 
-var KeyAliasMap = map[Key]Key {
+var keyAliasMap = map[Key]Key {
 	BackSpace: ControlH,
 	ControlSpace: ControlAt,
 	Enter: ControlM,
@@ -162,7 +162,7 @@ var CtrlKeyMap = map[string]([]Key) {
     "\x7f": []Key{ControlH},
 }
 
-var ANSIKeyMap = map[string]([]Key) {
+var aNSIKeyMap = map[string]([]Key) {
 	"\x1b[A": []Key{Up},
 	"\x1b[B": []Key{Down},
 	"\x1b[C": []Key{Right},
@@ -269,13 +269,13 @@ var ANSIKeyMap = map[string]([]Key) {
 
 func init() {
 	for k, v := range CtrlKeyMap {
-		ANSIKeyMap[k] = v
+		aNSIKeyMap[k] = v
 	}
 }
 
 // TODO: memoize
 func isPrefixOfANSI(s string) bool {
-	for k := range ANSIKeyMap {
+	for k := range aNSIKeyMap {
 		if s != k && strings.HasPrefix(k, s) {
 			return true
 		}

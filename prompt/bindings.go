@@ -15,13 +15,13 @@ func (p *Prompt) Bindings() *KeyBindings {
 		{
 			Keys: []Key{Escape, "b"},
 			Handler: func(event *Event) {
-				printf("%v\r\n", event.Keys)
+				myprint(event.Keys)
 			},
 		},
 		{
 			Keys: []Key{Escape, "f"},
 			Handler: func(event *Event) {
-				printf("%v\r\n", event.Keys)
+				myprint(event.Keys)
 			},
 		},
 		{
@@ -39,13 +39,13 @@ func (p *Prompt) Bindings() *KeyBindings {
 		{
 			Keys: []Key{Left},
 			Handler: func(event *Event) {
-				printf("%v\r\n", event.Keys)
+				myprint(event.Keys)
 			},
 		},
 		{
 			Keys: []Key{Right},
 			Handler: func(event *Event) {
-				printf("%v\r\n", event.Keys)
+				myprint(event.Keys)
 			},
 		},
 		{

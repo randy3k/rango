@@ -2,12 +2,11 @@ package prompt
 
 type Content struct {
 	Lines []Chars
-	Cursor Position
-	cursor_map map[Position]Position
+	Cursor DocumentCursor
 }
 
 
-func NewContent(lines []Chars, cursor Position) *Content {
+func NewContent(lines []Chars, cursor DocumentCursor) *Content {
 	return &Content{
 		Lines: lines,
 		Cursor: cursor,
@@ -15,7 +14,7 @@ func NewContent(lines []Chars, cursor Position) *Content {
 }
 
 
-func (c *Content) GetLines(width, maxheight, offset int) ([]Chars, []bool) {
+func (c *Content) GetRows(width, maxheight, offset int) ([]Chars, []bool) {
 	lineFragments := make([]Chars, 0)
 	lineno := make([]int, 0)
 	eol := make([]bool, 0)

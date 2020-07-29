@@ -13,9 +13,3 @@ func min(x, y int) int {
     }
     return x
 }
-
-
-type Position struct {
-    x int
-    y int
-}

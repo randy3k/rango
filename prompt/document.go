@@ -4,10 +4,16 @@ import (
 	"strings"
 )
 
+type DocumentCursor struct {
+    line int
+    character int
+}
+
+
 type Document struct {
 	Lines []string
 	N int
-	Cursor Position
+	Cursor DocumentCursor
 }
 
 func (doc *Document) SetText(t string) {

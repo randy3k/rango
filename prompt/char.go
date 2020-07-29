@@ -6,8 +6,8 @@ import (
 )
 
 type Attributes struct {
-	Foreground int // color in hex + 1, so 0 is default
-	Background int // color in hex + 1, so 0 is default
+	Foreground Color // color in hex + 1, so 0 is default
+	Background Color // color in hex + 1, so 0 is default
 	Bold       bool
 	Italic     bool
 	Underline  bool
@@ -22,6 +22,10 @@ type Char struct {
 	Attributes
 }
 
+var DefaultAttributes Attributes = Attributes{}
+var DefaultChar Char = Char{Value: ' ', Width: 1, Attributes: DefaultAttributes}
+
+
 func NewChar(r rune, attr Attributes) Char {
 	return Char{
 		Value: r,
@@ -34,19 +38,10 @@ func (c Char) String() string {
 	return string(c.Value)
 }
 
-var DefaultAttributes Attributes
-var DefaultChar Char
-
-func init() {
-	DefaultAttributes = Attributes{}
-	DefaultChar = NewChar(' ', DefaultAttributes)
-}
-
-
 func ChromaStyleToAttributes(sty chroma.StyleEntry) Attributes {
 	return Attributes{
-		Foreground: int(sty.Colour),
-		Background: int(sty.Background),
+		Foreground: Color(sty.Colour),
+		Background: 0,  // ignore the background from chroma
 		Bold:       sty.Bold == chroma.Yes,
 		Italic:     sty.Italic == chroma.Yes,
 		Underline:  sty.Underline == chroma.Yes,

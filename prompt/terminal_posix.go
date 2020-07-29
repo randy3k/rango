@@ -3,6 +3,7 @@
 package prompt
 
 import (
+	"os"
 	"sync"
 	"time"
 	// "math"
@@ -10,12 +11,14 @@ import (
 
 	"golang.org/x/sys/unix"
 	"github.com/mattn/go-tty"
-	"github.com/xo/terminfo"
+	_ "github.com/gdamore/tcell/terminfo/extended"
+	"github.com/gdamore/tcell/terminfo"
 )
 
 type Terminal struct {
 	tty *tty.TTY
-	ti  *terminfo.Terminfo
+	ti *terminfo.Terminfo
+	colorDepth ColorDepth
 
 	cleanup func() error
 
@@ -44,9 +47,12 @@ func (t *Terminal) init() error {
 		return e
 	}
 
-	if t.ti, e = terminfo.LoadFromEnv(); e != nil {
+	if t.ti, e = terminfo.LookupTerminfo(os.Getenv("TERM")); e != nil {
 		return e
 	}
+
+	// TODO: detect it from env
+	t.colorDepth = ColorDepth8Bits
 
 	if t.w, t.h, e = t.GetWinSize(); e != nil {
 		return e
@@ -111,7 +117,7 @@ func (t *Terminal) WriteString(s string) {
 }
 
 func (t *Terminal) Goto(row, col int) {
-	t.WriteString(t.ti.Goto(row, col))
+	t.WriteString(t.ti.TGoto(col, row))
 }
 
 func (t* Terminal) WaitForInput(timeout int) bool {

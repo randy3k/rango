@@ -4,4 +4,6 @@ import (
 	"fmt"
 )
 
-var printf = fmt.Printf
+func myprint(x interface{}) {
+	fmt.Printf("%v\r\n", x)
+}

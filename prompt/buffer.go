@@ -36,7 +36,12 @@ func (buf *Buffer) GetChars() Chars {
 	} else {
 		for token := it(); token != chroma.EOF; token = it() {
 			value := []rune(token.Value)
-			style := buf.Style.Get(token.Type.Category())
+			var style chroma.StyleEntry
+			if buf.Style.Has(token.Type.SubCategory()) {
+				style = buf.Style.Get(token.Type.SubCategory())
+			} else {
+				style = buf.Style.Get(token.Type.Category())
+			}
 			for _, x := range value {
 				chars = append(chars, NewChar(x, ChromaStyleToAttributes(style)))
 			}

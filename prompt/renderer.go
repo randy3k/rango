@@ -20,7 +20,12 @@ func (r *Renderer) Render(scr *Screen) {
 	t := r.terminal
 
 	t.WriteString(t.ti.HideCursor)
-	t.WriteString(fmt.Sprintf("\x1b[%dA\r", r.cursor.row))  // CUU and CR
+	if r.cursor.row > 0 {
+		t.WriteString(fmt.Sprintf("\x1b[%dA", r.cursor.row))  // CUU and CR
+	}
+	t.WriteString("\r")
+	t.WriteString("\x1b7")  // DECSC
+
 	for i := 0; i <= r.maxRow; i++ {
 		t.WriteString("\x1b[2K") // EL2
 	}
@@ -57,6 +62,13 @@ func (r *Renderer) Render(scr *Screen) {
 		}
 	}
 	t.WriteString(t.ti.AttrOff)
-	t.WriteString(t.Goto(r.cursor.row, r.cursor.col))
+	t.WriteString("\x1b8")  // DECRC
+	if r.cursor.row > 0 {
+		t.WriteString(fmt.Sprintf("\x1b[%dB", r.cursor.row))  // CUD
+	}
+	if r.cursor.col > 0 {
+		t.WriteString(fmt.Sprintf("\x1b[%dC", r.cursor.col))  // CUF
+	}
+	// t.WriteString(t.Goto(r.cursor.row, r.cursor.col))
 	t.WriteString(t.ti.ShowCursor)
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
-func myprint(x interface{}) {
+func print(x interface{}) {
 	fmt.Printf("%v\r\n", x)
 }
+
+var printf = fmt.Printf

@@ -17,6 +17,8 @@ func NewRenderer(terminal *Terminal) *Renderer {
 }
 
 func (r *Renderer) Render(scr *Screen) {
+	// TODO: diff previous screen
+
 	t := r.terminal
 
 	t.HideCursor()
@@ -32,13 +34,13 @@ func (r *Renderer) Render(scr *Screen) {
 	cursorAttr := DefaultAttributes
 
 	// find the last non-empty row
-	lastRow := scr.lines - 1
-	for i := scr.lines - 1; i >= 0; i-- {
-		if !scr.IsRowEmpty(i) {
-			lastRow = i
+	var lastRow int
+	for lastRow = scr.lines - 1; lastRow >= 0; lastRow-- {
+		if !scr.IsRowEmpty(lastRow) {
 			break
 		}
 	}
+	lastRow = max(lastRow, scr.row)
 
 	// for clearing screen in next rendering
 	r.maxRow = lastRow
@@ -55,7 +57,7 @@ func (r *Renderer) Render(scr *Screen) {
 			}
 			t.WriteString(string(c.Value))
 		}
-		if i + 1 <= lastRow {
+		if i + 1 <= lastRow && scr.eol[i] {
 			t.WriteString("\r\n")
 		}
 	}

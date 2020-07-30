@@ -10,11 +10,11 @@ type ScreenCursor struct {
 }
 
 type Screen struct {
-	h int
-	w int
+	lines int
+	columns int
 	chars []Char
 	eol []bool
-	Dirty []bool
+	dirty []bool
 
 	ScreenCursor
 }
@@ -22,20 +22,20 @@ type Screen struct {
 
 func NewScreen(h int, w int) *Screen {
 	return &Screen{
-		w: w,
-		h: h,
+		columns: w,
+		lines: h,
 		chars: make([]Char, w*h),
 		eol: make([]bool, h),
-		Dirty: make([]bool, h),
+		dirty: make([]bool, h),
 	}
 }
 
 func (scr *Screen) String() string {
 	s := ""
-	for i := 0; i < scr.h; i++ {
-		line := make([]string, scr.w)
-		for j := 0; j < scr.w; {
-			pos := scr.w * i + j
+	for i := 0; i < scr.lines; i++ {
+		line := make([]string, scr.columns)
+		for j := 0; j < scr.columns; {
+			pos := scr.columns * i + j
 			c := scr.chars[pos]
 			if c.Value == 0 {
 				line[j] = " "
@@ -56,25 +56,23 @@ func (scr *Screen) String() string {
 }
 
 
-func (scr *Screen) Clear() {
-	scr.chars = make([]Char, scr.w * scr.h)
-	scr.eol = make([]bool, scr.h)
-	for i := 0; i < scr.h; i++ {
-		scr.Dirty[i] = true
-	}
+func (scr *Screen) Reset() {
+	scr.chars = make([]Char, scr.columns * scr.lines)
+	scr.eol = make([]bool, scr.lines)
+	scr.dirty = make([]bool, scr.lines)
 }
 
 
 func (scr *Screen) Feed(c Char) (int, int) {
 	row := scr.row
 	col := scr.col
-	if scr.col >= scr.w {
+	if scr.col >= scr.columns {
 		scr.eol[row] = true
 		scr.LineFeed()
 	}
-	pos := scr.w * scr.row + scr.col
+	pos := scr.columns * scr.row + scr.col
 	scr.chars[pos] = c
-	scr.Dirty[scr.row] = true
+	scr.dirty[scr.row] = true
 	scr.col += c.Width
 	return row, col
 }
@@ -82,17 +80,17 @@ func (scr *Screen) Feed(c Char) (int, int) {
 func (scr *Screen) LineFeed() {
 	scr.col = 0
 	scr.row += 1
-	if scr.row == scr.h {
-		scr.chars = append(scr.chars[scr.w:], make([]Char, scr.w)...)
+	if scr.row == scr.lines {
+		scr.chars = append(scr.chars[scr.columns:], make([]Char, scr.columns)...)
 		scr.eol = append(scr.eol[1:], false)
-		scr.Dirty = append(scr.Dirty[1:], false)
+		scr.dirty = append(scr.dirty[1:], false)
 		scr.row -= 1
 	}
 }
 
 func (scr *Screen) GoTo(row int, col int) {
-	scr.row = max(0, min(row, scr.h - 1))
-	scr.col = max(0, min(col, scr.w - 1))
+	scr.row = max(0, min(row, scr.lines - 1))
+	scr.col = max(0, min(col, scr.columns - 1))
 }
 
 func (scr *Screen) SetCharAt(row int, col int, c Char) {
@@ -112,4 +110,14 @@ func (scr *Screen) SetCharsAt(row int, col int, cs []Char, eol bool) {
 	}
 	scr.eol[scr.row] = eol
 	scr.GoTo(oldrow, oldcol)
+}
+
+
+func (scr *Screen) IsRowEmpty(row int) bool {
+	for j := 0; j < scr.columns; j++ {
+		if scr.chars[row * scr.columns + j].Value > 0 {
+			return false
+		}
+	}
+	return true
 }

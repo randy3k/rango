@@ -8,14 +8,14 @@ import (
 
 type Buffer struct {
 	// completer
-	Doc   *Document
+	Document   *Document
 	Lexer *chroma.Lexer
 	Style *chroma.Style
 }
 
 func NewBuffer(lexer chroma.Lexer, style *chroma.Style) *Buffer {
 	buf := &Buffer{
-		Doc:   &Document{},
+		Document: NewDocument(),
 		Lexer: &lexer,
 		Style: style,
 	}
@@ -23,14 +23,18 @@ func NewBuffer(lexer chroma.Lexer, style *chroma.Style) *Buffer {
 }
 
 func (buf *Buffer) SetText(t string) {
-	buf.Doc.SetText(t)
+	buf.Document.SetText(t)
+}
+
+func (buf *Buffer) InsertText(t string) {
+	buf.Document.InsertText(t)
 }
 
 func (buf *Buffer) GetChars() Chars {
-	it, err := (*buf.Lexer).Tokenise(nil, buf.Doc.GetText())
+	it, err := (*buf.Lexer).Tokenise(nil, buf.Document.GetText())
 	chars := make(Chars, 0)
 	if err != nil {
-		for _, x := range buf.Doc.GetText() {
+		for _, x := range buf.Document.GetText() {
 			chars = append(chars, NewChar(x, DefaultAttributes))
 		}
 	} else {
@@ -53,5 +57,5 @@ func (buf *Buffer) GetChars() Chars {
 
 func (buf *Buffer) CreateContent(width, height int) *Content {
 	lines := buf.GetChars().SplitBy('\n')
-	return NewContent(lines, buf.Doc.Cursor)
+	return NewContent(lines, buf.Document.Cursor)
 }

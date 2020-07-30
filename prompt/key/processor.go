@@ -14,7 +14,7 @@ type KeyBindingDispatch struct {
 type KeyProcessor struct {
 	bindings *KeyBindings
 	kp   *infchan.InfChan
-	event chan *KeyBindingDispatch
+	dispatch chan *KeyBindingDispatch
 	flush chan struct{}
 	quit chan struct{}
 
@@ -25,7 +25,7 @@ func NewKeyProcessor(bindings *KeyBindings) *KeyProcessor {
 	p := &KeyProcessor{
 		bindings: bindings.Normalize(),
 		kp: infchan.NewInfChan(),
-		event: make(chan *KeyBindingDispatch),
+		dispatch: make(chan *KeyBindingDispatch),
 		flush: make(chan struct{}),
 		quit: make(chan struct{}),
 		timeoutlen: time.Second,
@@ -39,7 +39,7 @@ func (p *KeyProcessor) Stop() {
 
 func (p *KeyProcessor) Start() <-chan *KeyBindingDispatch{
 	go p.processLoop()
-	return p.event
+	return p.dispatch
 }
 
 func (p *KeyProcessor) Feed(kp *KeyPress) {
@@ -79,7 +79,11 @@ loop:
 
 		// eager keybindings
 		if binding, ok := p.bindings.Get(prefix, true); ok {
-			p.event <- &KeyBindingDispatch{Binding: binding}
+			data := []rune{}
+			if len(binding.Keys) == 1 && binding.Keys[0] == Any {
+				data = []rune(prefix[0])
+			}
+			p.dispatch <- &KeyBindingDispatch{Binding: binding, Data: data}
 			prefix = nil
 			flushing = false
 			continue
@@ -95,7 +99,11 @@ loop:
 		// longest match
 		for i := len(prefix); i > 0; i-- {
 			if binding, ok := p.bindings.Get(prefix[:i], false); ok {
-				p.event <- &KeyBindingDispatch{Binding: binding}
+				data := []rune{}
+				if len(binding.Keys) == 1 && binding.Keys[0] == Any {
+					data = []rune(prefix[0])
+				}
+				p.dispatch <- &KeyBindingDispatch{Binding: binding, Data: data}
 				found = i
 				break
 			}

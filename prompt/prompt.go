@@ -6,10 +6,13 @@ import (
 	// "fmt"
 	// "runtime"
 	. "github.com/randy3k/rango/prompt/key"
+	"github.com/alecthomas/chroma/lexers"
+	"github.com/alecthomas/chroma/styles"
 )
 
 type Prompt struct {
-	quit bool
+	Quit bool
+	Buffer *Buffer
 }
 
 func NewPrompt() *Prompt {
@@ -18,7 +21,7 @@ func NewPrompt() *Prompt {
 }
 
 func (p *Prompt) Show(message string) {
-	p.quit = false
+	p.Quit = false
 	// go func() {
 	// 	printf("%v\r\n", runtime.NumGoroutine())
 	// }()
@@ -35,13 +38,26 @@ func (p *Prompt) Show(message string) {
 	kbDispatch := kProcessor.Start()
 	defer kProcessor.Stop()
 
+	renderer := NewRenderer(t)
+
+	if p.Buffer == nil {
+		lexer := lexers.Get("python")
+		style := styles.Get("native")
+		p.Buffer = NewBuffer(lexer, style)
+	}
+	buffer := p.Buffer
+	container := NewContainer(buffer)
+	screen := NewScreen(t.Lines, t.Columns)
+
 	// loop:
-	for !p.quit {
+	for !p.Quit {
 		// caution: the case handler must not block
 		select {
 		case dispatch := <-kbDispatch:
 			hand := dispatch.Binding.Handler.(func(*Event))
 			hand(&Event{Keys: dispatch.Binding.Keys, Data: dispatch.Data, Prompt: p})
+			container.WriteToScreen(screen)
+			renderer.Render(screen)
 		case kp := <-keyPress:
 			kProcessor.Feed(kp)
 		case input := <-kbInput:

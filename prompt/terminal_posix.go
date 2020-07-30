@@ -25,8 +25,8 @@ type Terminal struct {
 	input chan []rune
 	quit chan struct{}
 
-	h   int // window height
-	w   int // window weight
+	Lines   int // window height
+	Columns   int // window weight
 
 	mu sync.Mutex
 }
@@ -52,9 +52,15 @@ func (t *Terminal) init() error {
 	}
 
 	// TODO: detect it from env
-	t.colorDepth = ColorDepth8Bits
+	if t.ti.Colors >= 256 {
+		t.colorDepth = ColorDepth8Bits
+	} else if t.ti.Colors >= 8 {
+		t.colorDepth = ColorDepth4Bits
+	} else {
+		t.colorDepth = ColorDepth1Bit
+	}
 
-	if t.w, t.h, e = t.GetWinSize(); e != nil {
+	if t.Columns, t.Lines, e = t.GetWinSize(); e != nil {
 		return e
 	}
 
@@ -113,11 +119,8 @@ func (t *Terminal) Resize() {
 }
 
 func (t *Terminal) WriteString(s string) {
+	// TODO: buffer stdout
 	t.tty.Output().WriteString(s)
-}
-
-func (t *Terminal) Goto(row, col int) {
-	t.WriteString(t.ti.TGoto(col, row))
 }
 
 func (t* Terminal) WaitForInput(timeout int) bool {
@@ -130,4 +133,17 @@ func (t* Terminal) WaitForInput(timeout int) bool {
 	    return false
 	}
 	return n >= 0 && rFdSet.IsSet(int(fd))
+}
+
+func (t *Terminal) Goto(row, col int) string {
+	return t.ti.TGoto(col, row)
+}
+
+func (t *Terminal) TColor(c Char) string {
+	if t.colorDepth == ColorDepth8Bits {
+		return t.ti.TParm(t.ti.TColor(c.Foreground.Code8Bits(), c.Background.Code8Bits()))
+	} else if t.colorDepth == ColorDepth4Bits {
+		return t.ti.TParm(t.ti.TColor(c.Foreground.Code4Bits(), c.Background.Code4Bits()))
+	}
+	return ""
 }

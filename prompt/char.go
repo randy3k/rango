@@ -41,7 +41,6 @@ func (c Char) String() string {
 func ChromaStyleToAttributes(sty chroma.StyleEntry) Attributes {
 	return Attributes{
 		Foreground: Color(sty.Colour),
-		Background: 0,  // ignore the background from chroma
 		Bold:       sty.Bold == chroma.Yes,
 		Italic:     sty.Italic == chroma.Yes,
 		Underline:  sty.Underline == chroma.Yes,

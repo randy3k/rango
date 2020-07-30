@@ -14,10 +14,14 @@ func NewContainer(buffer *Buffer) *Container {
 }
 
 func (c *Container) WriteToScreen(scr *Screen) {
-	content := c.buffer.CreateContent(scr.w, scr.h)
+	content := c.buffer.CreateContent(scr.columns, scr.lines)
+	lines, eol := content.GetRows(scr.columns, scr.lines, c.scrollOffset)
 
-	lines, eol := content.GetRows(scr.w, scr.h, c.scrollOffset)
+	scr.Reset()
 	for i, l := range lines {
 		scr.SetCharsAt(i, 0, l, eol[i])
 	}
+	// FIXME: handle char width and line wrap
+	scr.row = content.Cursor.Line
+	scr.col = content.Cursor.Character
 }

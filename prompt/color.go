@@ -16,6 +16,7 @@ const (
 	ColorDepth24Bits
 )
 
+
 // from https://github.com/tomnomnom/xtermcolor/blob/b78803f00a7e8c5596d5ce64bb717a6a71464792/colors.go
 
 var ColorPalette4Bits = color.Palette{

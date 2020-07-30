@@ -1,7 +1,7 @@
 package prompt
 
-import (
-	"fmt"
+const (
+	AttrOff = "\x1b[0m"
 )
 
 type Renderer struct {
@@ -19,10 +19,8 @@ func NewRenderer(terminal *Terminal) *Renderer {
 func (r *Renderer) Render(scr *Screen) {
 	t := r.terminal
 
-	t.WriteString(t.ti.HideCursor)
-	if r.cursor.row > 0 {
-		t.WriteString(fmt.Sprintf("\x1b[%dA", r.cursor.row))  // CUU and CR
-	}
+	t.HideCursor()
+	t.MoveCursorUp(r.cursor.row)
 	t.WriteString("\r")
 	t.WriteString("\x1b7")  // DECSC
 
@@ -30,7 +28,7 @@ func (r *Renderer) Render(scr *Screen) {
 		t.WriteString("\x1b[2K") // EL2
 	}
 
-	t.WriteString(t.ti.AttrOff)
+	t.WriteString(AttrOff)
 	cursorAttr := DefaultAttributes
 
 	// find the last non-empty row
@@ -52,8 +50,8 @@ func (r *Renderer) Render(scr *Screen) {
 			c := scr.chars[pos]
 			if c.Attributes != cursorAttr {
 				cursorAttr = c.Attributes
-				t.WriteString(t.ti.AttrOff)
-				t.WriteString(t.TColor(c))
+				t.WriteString(AttrOff)
+				t.WriteString(t.ColorSequence(c))
 			}
 			t.WriteString(string(c.Value))
 		}
@@ -61,14 +59,9 @@ func (r *Renderer) Render(scr *Screen) {
 			t.WriteString("\r\n")
 		}
 	}
-	t.WriteString(t.ti.AttrOff)
+	t.WriteString(AttrOff)
 	t.WriteString("\x1b8")  // DECRC
-	if r.cursor.row > 0 {
-		t.WriteString(fmt.Sprintf("\x1b[%dB", r.cursor.row))  // CUD
-	}
-	if r.cursor.col > 0 {
-		t.WriteString(fmt.Sprintf("\x1b[%dC", r.cursor.col))  // CUF
-	}
-	// t.WriteString(t.Goto(r.cursor.row, r.cursor.col))
-	t.WriteString(t.ti.ShowCursor)
+	t.MoveCursorDown(r.cursor.row)
+	t.MoveCursorLeft(r.cursor.col)
+	t.ShowCursor()
 }

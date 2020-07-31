@@ -24,7 +24,6 @@ func (r *Renderer) Render(scr *Screen) {
 	t.HideCursor()
 	t.MoveCursorUp(r.cursor.row)
 	t.WriteString("\r")
-	t.WriteString("\x1b7")  // DECSC
 
 	for i := 0; i <= r.maxRow; i++ {
 		t.WriteString("\x1b[2K") // EL2
@@ -32,7 +31,7 @@ func (r *Renderer) Render(scr *Screen) {
 			t.MoveCursorDown(1)
 		}
 	}
-	t.WriteString("\x1b8")
+	t.MoveCursorUp(r.maxRow)
 
 	t.WriteString(AttrOff)
 	cursorAttr := DefaultAttributes
@@ -66,7 +65,8 @@ func (r *Renderer) Render(scr *Screen) {
 		}
 	}
 	t.WriteString(AttrOff)
-	t.WriteString("\x1b8")  // DECRC
+	t.MoveCursorUp(lastRow)
+	t.WriteString("\r")
 	t.MoveCursorDown(r.cursor.row)
 	t.MoveCursorLeft(r.cursor.col)
 	t.ShowCursor()

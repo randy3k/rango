@@ -24,12 +24,18 @@ func (p *Prompt) Bindings() *KeyBindings {
 		// 		myprint(event.Keys)
 		// 	},
 		// },
-		// {
-		// 	Keys: []Key{ControlA},
-		// 	Handler: func(event *Event) {
-		// 		print("[c-a]\r\n")
-		// 	},
-		// },
+		{
+			Keys: []Key{Right},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorRight()
+			},
+		},
+		{
+			Keys: []Key{Left},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorLeft()
+			},
+		},
 		{
 			Keys: []Key{Enter},
 			Handler: func(event *Event) {

@@ -28,7 +28,11 @@ func (r *Renderer) Render(scr *Screen) {
 
 	for i := 0; i <= r.maxRow; i++ {
 		t.WriteString("\x1b[2K") // EL2
+		if i < r.maxRow {
+			t.MoveCursorDown(1)
+		}
 	}
+	t.WriteString("\x1b8")
 
 	t.WriteString(AttrOff)
 	cursorAttr := DefaultAttributes

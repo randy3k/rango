@@ -47,7 +47,6 @@ func (p *Prompt) Show(message string) {
 	}
 	buffer := p.Buffer
 	container := NewContainer(buffer)
-	screen := NewScreen(t.Lines, t.Columns)
 
 	// loop:
 	for !p.Quit {
@@ -56,6 +55,7 @@ func (p *Prompt) Show(message string) {
 		case dispatch := <-kbDispatch:
 			hand := dispatch.Binding.Handler.(func(*Event))
 			hand(&Event{Keys: dispatch.Binding.Keys, Data: dispatch.Data, Prompt: p})
+			screen := NewScreen(t.Lines, t.Columns)
 			container.WriteToScreen(screen)
 			renderer.Render(screen)
 		case kp := <-keyPress:

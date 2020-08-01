@@ -5,13 +5,13 @@ import (
 )
 
 type ScreenCursor struct {
-	row int
-	col int
+	Line int
+	Column int
 }
 
 type Screen struct {
-	lines int
-	columns int
+	Lines int
+	Columns int
 	chars []Char
 	eol []bool
 	dirty []bool
@@ -22,8 +22,8 @@ type Screen struct {
 
 func NewScreen(h int, w int) *Screen {
 	return &Screen{
-		columns: w,
-		lines: h,
+		Columns: w,
+		Lines: h,
 		chars: make([]Char, w*h),
 		eol: make([]bool, h),
 		dirty: make([]bool, h),
@@ -32,10 +32,10 @@ func NewScreen(h int, w int) *Screen {
 
 func (scr *Screen) String() string {
 	s := ""
-	for i := 0; i < scr.lines; i++ {
-		line := make([]string, scr.columns)
-		for j := 0; j < scr.columns; {
-			pos := scr.columns * i + j
+	for i := 0; i < scr.Lines; i++ {
+		line := make([]string, scr.Columns)
+		for j := 0; j < scr.Columns; {
+			pos := scr.Columns * i + j
 			c := scr.chars[pos]
 			if c.Value == 0 {
 				line[j] = " "
@@ -57,65 +57,65 @@ func (scr *Screen) String() string {
 
 
 func (scr *Screen) Reset() {
-	scr.chars = make([]Char, scr.columns * scr.lines)
-	scr.eol = make([]bool, scr.lines)
-	scr.dirty = make([]bool, scr.lines)
+	scr.chars = make([]Char, scr.Columns * scr.Lines)
+	scr.eol = make([]bool, scr.Lines)
+	scr.dirty = make([]bool, scr.Lines)
 }
 
 
 func (scr *Screen) Feed(c Char) (int, int) {
-	row := scr.row
-	col := scr.col
-	if scr.col >= scr.columns {
-		scr.eol[row] = true
+	line := scr.Line
+	col := scr.Column
+	if scr.Column >= scr.Columns {
+		scr.eol[line] = true
 		scr.LineFeed()
 	}
-	pos := scr.columns * scr.row + scr.col
+	pos := scr.Columns * scr.Line + scr.Column
 	scr.chars[pos] = c
-	scr.dirty[scr.row] = true
-	scr.col += c.Width
-	return row, col
+	scr.dirty[scr.Line] = true
+	scr.Column += c.Width
+	return line, col
 }
 
 func (scr *Screen) LineFeed() {
-	scr.col = 0
-	scr.row += 1
-	if scr.row == scr.lines {
-		scr.chars = append(scr.chars[scr.columns:], make([]Char, scr.columns)...)
+	scr.Column = 0
+	scr.Line += 1
+	if scr.Line == scr.Lines {
+		scr.chars = append(scr.chars[scr.Columns:], make([]Char, scr.Columns)...)
 		scr.eol = append(scr.eol[1:], false)
 		scr.dirty = append(scr.dirty[1:], false)
-		scr.row -= 1
+		scr.Line -= 1
 	}
 }
 
-func (scr *Screen) GoTo(row int, col int) {
-	scr.row = max(0, min(row, scr.lines - 1))
-	scr.col = max(0, min(col, scr.columns - 1))
+func (scr *Screen) GoTo(line int, col int) {
+	scr.Line = max(0, min(line, scr.Lines - 1))
+	scr.Column = max(0, min(col, scr.Columns - 1))
 }
 
-func (scr *Screen) SetCharAt(row int, col int, c Char) {
-	oldrow := scr.row
-	oldcol := scr.col
-	scr.GoTo(row, col)
+func (scr *Screen) SetCharAt(line int, col int, c Char) {
+	oldline := scr.Line
+	oldcol := scr.Column
+	scr.GoTo(line, col)
 	scr.Feed(c)
-	scr.GoTo(oldrow, oldcol)
+	scr.GoTo(oldline, oldcol)
 }
 
-func (scr *Screen) SetCharsAt(row int, col int, cs []Char, eol bool) {
-	oldrow := scr.row
-	oldcol := scr.col
-	scr.GoTo(row, col)
+func (scr *Screen) SetCharsAt(line int, col int, cs []Char, eol bool) {
+	oldline := scr.Line
+	oldcol := scr.Column
+	scr.GoTo(line, col)
 	for _, c := range cs {
 		scr.Feed(c)
 	}
-	scr.eol[scr.row] = eol
-	scr.GoTo(oldrow, oldcol)
+	scr.eol[scr.Line] = eol
+	scr.GoTo(oldline, oldcol)
 }
 
 
-func (scr *Screen) IsRowEmpty(row int) bool {
-	for j := 0; j < scr.columns; j++ {
-		if scr.chars[row * scr.columns + j].Value > 0 {
+func (scr *Screen) IsLineEmpty(line int) bool {
+	for j := 0; j < scr.Columns; j++ {
+		if scr.chars[line * scr.Columns + j].Value > 0 {
 			return false
 		}
 	}

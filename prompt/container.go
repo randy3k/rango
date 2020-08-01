@@ -18,7 +18,7 @@ func perpareContent(content *Content, width, maxheight, offset int) ([]Chars, []
 	lineFragments := make([]Chars, 0)
 	eol := make([]bool, 0)
 
-	var scursor ScreenCursor
+	var screenCursor ScreenCursor
 
 	for i, l := range content.Lines {
 		wl := l.SplitAt(width)
@@ -29,23 +29,23 @@ func perpareContent(content *Content, width, maxheight, offset int) ([]Chars, []
 				w := 0
 				for _, c := range lf {
 					if content.Cursor.Character <= k {
-						scursor.row = len(lineFragments) + j
-						scursor.col = w
+						screenCursor.Line = len(lineFragments) + j
+						screenCursor.Column = w
 						goto found_cursor
 					}
 					k++
 					w += c.Width
 				}
 				if content.Cursor.Character <= k {
-					scursor.row = len(lineFragments) + j
-					scursor.col = w
+					screenCursor.Line = len(lineFragments) + j
+					screenCursor.Column = w
 					goto found_cursor
 				}
 			}
 		found_cursor:
-			if scursor.col >= width {
-				scursor.row++
-				scursor.col = 0
+			if screenCursor.Column >= width {
+				screenCursor.Line++
+				screenCursor.Column = 0
 			}
 		}
 		for j, lf := range wl {
@@ -66,16 +66,16 @@ func perpareContent(content *Content, width, maxheight, offset int) ([]Chars, []
 	}
 
 	if offset > 0 {
-		scursor.row -= offset
+		screenCursor.Line -= offset
 	}
 
-	return lineFragments[offset:(offset+maxheight)], eol[offset:(offset+maxheight)], scursor
+	return lineFragments[offset:(offset+maxheight)], eol[offset:(offset+maxheight)], screenCursor
 }
 
 
 func (c *Container) WriteToScreen(scr *Screen) {
-	content := c.buffer.CreateContent(scr.columns, scr.lines)
-	lines, eol, cursor := perpareContent(content, scr.columns, scr.lines, c.scrollOffset)
+	content := c.buffer.CreateContent(scr.Columns, scr.Lines)
+	lines, eol, cursor := perpareContent(content, scr.Columns, scr.Lines, c.scrollOffset)
 
 	scr.Reset()
 	for i, l := range lines {

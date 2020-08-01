@@ -7,7 +7,7 @@ const (
 type Renderer struct {
 	terminal *Terminal
 	cursor ScreenCursor
-	maxRow int
+	maxLine int
 }
 
 func NewRenderer(terminal *Terminal) *Renderer {
@@ -22,36 +22,36 @@ func (r *Renderer) Render(scr *Screen) {
 	t := r.terminal
 
 	t.HideCursor()
-	t.MoveCursorUp(r.cursor.row)
+	t.MoveCursorUp(r.cursor.Line)
 	t.WriteString("\r")
 
-	for i := 0; i <= r.maxRow; i++ {
+	for i := 0; i <= r.maxLine; i++ {
 		t.WriteString("\x1b[2K") // EL2
-		if i < r.maxRow {
+		if i < r.maxLine {
 			t.MoveCursorDown(1)
 		}
 	}
-	t.MoveCursorUp(r.maxRow)
+	t.MoveCursorUp(r.maxLine)
 
 	t.WriteString(AttrOff)
 	cursorAttr := DefaultAttributes
 
-	// find the last non-empty row
-	var lastRow int
-	for lastRow = scr.lines - 1; lastRow >= 0; lastRow-- {
-		if !scr.IsRowEmpty(lastRow) {
+	// find the last non-empty line
+	var lastLine int
+	for lastLine = scr.Lines - 1; lastLine >= 0; lastLine-- {
+		if !scr.IsLineEmpty(lastLine) {
 			break
 		}
 	}
-	lastRow = max(lastRow, scr.row)
+	lastLine = max(lastLine, scr.Line)
 
 	// for clearing screen in next rendering
-	r.maxRow = lastRow
+	r.maxLine = lastLine
 	r.cursor = scr.ScreenCursor
 
-	for i := 0; i <= lastRow; i++ {
-		for j := 0; j < scr.columns; j++ {
-			pos := i * scr.columns + j
+	for i := 0; i <= lastLine; i++ {
+		for j := 0; j < scr.Columns; j++ {
+			pos := i * scr.Columns + j
 			c := scr.chars[pos]
 			if c.Attributes != cursorAttr {
 				cursorAttr = c.Attributes
@@ -60,14 +60,14 @@ func (r *Renderer) Render(scr *Screen) {
 			}
 			t.WriteString(string(c.Value))
 		}
-		if i + 1 <= lastRow && scr.eol[i] {
+		if i + 1 <= lastLine && scr.eol[i] {
 			t.WriteString("\r\n")
 		}
 	}
 	t.WriteString(AttrOff)
-	t.MoveCursorUp(lastRow)
+	t.MoveCursorUp(lastLine)
 	t.WriteString("\r")
-	t.MoveCursorDown(r.cursor.row)
-	t.MoveCursorLeft(r.cursor.col)
+	t.MoveCursorDown(r.cursor.Line)
+	t.MoveCursorLeft(r.cursor.Column)
 	t.ShowCursor()
 }

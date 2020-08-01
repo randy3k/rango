@@ -6,24 +6,18 @@ import (
 
 func (p *Prompt) Bindings() *KeyBindings {
 	b := KeyBindings{
-		// {
-		// 	Keys: []Key{Escape},
-		// 	Handler: func(event *Event) {
-		// 		print("[escape]\r\n")
-		// 	},
-		// },
-		// {
-		// 	Keys: []Key{Escape, "b"},
-		// 	Handler: func(event *Event) {
-		// 		myprint(event.Keys)
-		// 	},
-		// },
-		// {
-		// 	Keys: []Key{Escape, "f"},
-		// 	Handler: func(event *Event) {
-		// 		myprint(event.Keys)
-		// 	},
-		// },
+		{
+			Keys: []Key{Up},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorUp()
+			},
+		},
+		{
+			Keys: []Key{Down},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorDown()
+			},
+		},
 		{
 			Keys: []Key{Right},
 			Handler: func(event *Event) {
@@ -37,9 +31,27 @@ func (p *Prompt) Bindings() *KeyBindings {
 			},
 		},
 		{
-			Keys: []Key{Enter},
+			Keys: []Key{Escape, Enter},
 			Handler: func(event *Event) {
 				event.Prompt.Buffer.Document.InsertLine()
+			},
+		},
+		{
+			Keys: []Key{BackSpace},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.DeleteLeftRune()
+			},
+		},
+		{
+			Keys: []Key{Delete},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.DeleteRightRune()
+			},
+		},
+		{
+			Keys: []Key{Escape, BackSpace},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.DeleteWord()
 			},
 		},
 		{

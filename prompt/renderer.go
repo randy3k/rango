@@ -43,11 +43,11 @@ func (r *Renderer) Render(scr *Screen) {
 			break
 		}
 	}
-	lastLine = max(lastLine, scr.Line)
+	lastLine = max(lastLine, scr.Cursor.Line)
 
 	// for clearing screen in next rendering
 	r.maxLine = lastLine
-	r.cursor = scr.ScreenCursor
+	r.cursor = scr.Cursor
 
 	for i := 0; i <= lastLine; i++ {
 		for j := 0; j < scr.Columns; j++ {

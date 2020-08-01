@@ -81,5 +81,5 @@ func (c *Container) WriteToScreen(scr *Screen) {
 	for i, l := range lines {
 		scr.SetCharsAt(i, 0, l, eol[i])
 	}
-	scr.ScreenCursor = cursor
+	scr.Cursor = cursor
 }

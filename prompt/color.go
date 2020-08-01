@@ -4,7 +4,6 @@ import (
 	"image/color"
 )
 
-
 type Color int
 
 type ColorDepth int
@@ -15,7 +14,6 @@ const (
 	ColorDepth8Bits
 	ColorDepth24Bits
 )
-
 
 // from https://github.com/tomnomnom/xtermcolor/blob/b78803f00a7e8c5596d5ce64bb717a6a71464792/colors.go
 
@@ -302,7 +300,6 @@ var ColorPalette8Bits = color.Palette{
 	245: color.RGBA{0x8a, 0x8a, 0x8a, 0xff},
 	244: color.RGBA{0x80, 0x80, 0x80, 0xff},
 }
-
 
 var colorCode4BitsCache map[int]int = map[int]int{}
 

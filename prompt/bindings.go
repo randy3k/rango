@@ -64,7 +64,7 @@ func (p *Prompt) Bindings() *KeyBindings {
 		{
 			Keys: []Key{Any},
 			Handler: func(event *Event) {
-				if (len(event.Data) == 1) {
+				if len(event.Data) == 1 {
 					event.Prompt.Buffer.InsertText(string(event.Data[0]))
 				}
 			},

@@ -1,18 +1,16 @@
 package prompt
 
-
 type Container struct {
-	buffer *Buffer
+	buffer       *Buffer
 	scrollOffset int
 }
 
 func NewContainer(buffer *Buffer) *Container {
 	return &Container{
-		buffer: buffer,
+		buffer:       buffer,
 		scrollOffset: -1,
 	}
 }
-
 
 func perpareContent(content *Content, width, maxheight, offset int) ([]Chars, []bool, ScreenCursor) {
 	lineFragments := make([]Chars, 0)
@@ -50,18 +48,18 @@ func perpareContent(content *Content, width, maxheight, offset int) ([]Chars, []
 		}
 		for j, lf := range wl {
 			lineFragments = append(lineFragments, lf)
-			eol = append(eol, j + 1 == len(wl))
+			eol = append(eol, j+1 == len(wl))
 		}
 	}
 
 	totalHeight := len(lineFragments)
 
-	if (totalHeight < maxheight) {
+	if totalHeight < maxheight {
 		offset = 0
 		maxheight = totalHeight
 	}
 
-	if (offset < 0 || offset + maxheight > totalHeight) {
+	if offset < 0 || offset+maxheight > totalHeight {
 		offset = totalHeight - maxheight
 	}
 
@@ -69,9 +67,8 @@ func perpareContent(content *Content, width, maxheight, offset int) ([]Chars, []
 		screenCursor.Line -= offset
 	}
 
-	return lineFragments[offset:(offset+maxheight)], eol[offset:(offset+maxheight)], screenCursor
+	return lineFragments[offset:(offset + maxheight)], eol[offset:(offset + maxheight)], screenCursor
 }
-
 
 func (c *Container) WriteToScreen(scr *Screen) {
 	content := c.buffer.CreateContent(scr.Columns, scr.Lines)

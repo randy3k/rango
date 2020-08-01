@@ -5,27 +5,26 @@ import (
 )
 
 type ScreenCursor struct {
-	Line int
+	Line   int
 	Column int
 }
 
 type Screen struct {
-	Lines int
+	Lines   int
 	Columns int
-	Cursor ScreenCursor
-	chars []Char
-	eol []bool
-	dirty []bool
+	Cursor  ScreenCursor
+	chars   []Char
+	eol     []bool
+	dirty   []bool
 }
-
 
 func NewScreen(h int, w int) *Screen {
 	return &Screen{
 		Columns: w,
-		Lines: h,
-		chars: make([]Char, w*h),
-		eol: make([]bool, h),
-		dirty: make([]bool, h),
+		Lines:   h,
+		chars:   make([]Char, w*h),
+		eol:     make([]bool, h),
+		dirty:   make([]bool, h),
 	}
 }
 
@@ -34,12 +33,12 @@ func (scr *Screen) String() string {
 	for i := 0; i < scr.Lines; i++ {
 		line := make([]string, scr.Columns)
 		for j := 0; j < scr.Columns; {
-			pos := scr.Columns * i + j
+			pos := scr.Columns*i + j
 			c := scr.chars[pos]
 			if c.Value == 0 {
 				line[j] = " "
 				j += 1
-			} else  {
+			} else {
 				line[j] = string(c.Value)
 				j = j + c.Width
 			}
@@ -47,20 +46,18 @@ func (scr *Screen) String() string {
 		s += "|" + strings.Join(line, "")
 		if scr.eol[i] {
 			s += "|\n"
-		} else  {
+		} else {
 			s += "+\n"
 		}
 	}
 	return s
 }
 
-
 func (scr *Screen) Reset() {
-	scr.chars = make([]Char, scr.Columns * scr.Lines)
+	scr.chars = make([]Char, scr.Columns*scr.Lines)
 	scr.eol = make([]bool, scr.Lines)
 	scr.dirty = make([]bool, scr.Lines)
 }
-
 
 func (scr *Screen) Feed(c Char) (int, int) {
 	line := scr.Cursor.Line
@@ -69,7 +66,7 @@ func (scr *Screen) Feed(c Char) (int, int) {
 		scr.eol[line] = true
 		scr.LineFeed()
 	}
-	pos := scr.Columns * scr.Cursor.Line + scr.Cursor.Column
+	pos := scr.Columns*scr.Cursor.Line + scr.Cursor.Column
 	scr.chars[pos] = c
 	scr.dirty[scr.Cursor.Line] = true
 	scr.Cursor.Column += c.Width
@@ -88,8 +85,8 @@ func (scr *Screen) LineFeed() {
 }
 
 func (scr *Screen) GoTo(line int, col int) {
-	scr.Cursor.Line = max(0, min(line, scr.Lines - 1))
-	scr.Cursor.Column = max(0, min(col, scr.Columns - 1))
+	scr.Cursor.Line = max(0, min(line, scr.Lines-1))
+	scr.Cursor.Column = max(0, min(col, scr.Columns-1))
 }
 
 func (scr *Screen) SetCharAt(line int, col int, c Char) {
@@ -111,10 +108,9 @@ func (scr *Screen) SetCharsAt(line int, col int, cs []Char, eol bool) {
 	scr.GoTo(oldline, oldcol)
 }
 
-
 func (scr *Screen) IsLineEmpty(line int) bool {
 	for j := 0; j < scr.Columns; j++ {
-		if scr.chars[line * scr.Columns + j].Value > 0 {
+		if scr.chars[line*scr.Columns+j].Value > 0 {
 			return false
 		}
 	}

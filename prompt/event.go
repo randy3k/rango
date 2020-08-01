@@ -5,7 +5,7 @@ import (
 )
 
 type Event struct {
-	Keys []Key
-	Data []rune
+	Keys   []Key
+	Data   []rune
 	Prompt *Prompt
 }

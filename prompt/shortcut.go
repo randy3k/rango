@@ -1,9 +1,9 @@
 package prompt
 
 import (
-	"os"
-	"io"
 	"fmt"
+	"io"
+	"os"
 )
 
 func Print(x interface{}) {
@@ -12,17 +12,16 @@ func Print(x interface{}) {
 
 var Printf = fmt.Printf
 
-
 func DebugPrint(x interface{}) error {
-    file, err := os.Create("/tmp/rango")
-    if err != nil {
-        panic(err)
-    }
-    defer file.Close()
+	file, err := os.Create("/tmp/rango")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
 
-    _, err = io.WriteString(file, fmt.Sprintf("%v\n", x))
-    if err != nil {
-        panic(err)
-    }
-    return file.Sync()
+	_, err = io.WriteString(file, fmt.Sprintf("%v\n", x))
+	if err != nil {
+		panic(err)
+	}
+	return file.Sync()
 }

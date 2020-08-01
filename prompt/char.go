@@ -25,11 +25,10 @@ type Char struct {
 var DefaultAttributes Attributes = Attributes{}
 var DefaultChar Char = Char{Value: ' ', Width: 1, Attributes: DefaultAttributes}
 
-
 func NewChar(r rune, attr Attributes) Char {
 	return Char{
-		Value: r,
-		Width: runewidth.RuneWidth(r),
+		Value:      r,
+		Width:      runewidth.RuneWidth(r),
 		Attributes: attr,
 	}
 }
@@ -62,9 +61,8 @@ func (chars Chars) SplitBy(r rune) []Chars {
 	return lines
 }
 
-
 func (chars Chars) SplitAt(at int) []Chars {
-	if (at <= 0) {
+	if at <= 0 {
 		panic("`at` should be >= 1")
 	}
 	lines := make([]Chars, 0)

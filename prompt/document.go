@@ -1,8 +1,8 @@
 package prompt
 
 import (
-	"strings"
 	"regexp"
+	"strings"
 	// "github.com/mattn/go-runewidth"
 )
 
@@ -38,7 +38,6 @@ func (doc *Document) GetText() string {
 	return strings.Join(lines, "\n")
 }
 
-
 func (doc *Document) MoveCursorUp() {
 	if doc.Cursor.Line > 0 {
 		doc.Cursor.Line -= 1
@@ -50,7 +49,7 @@ func (doc *Document) MoveCursorUp() {
 }
 
 func (doc *Document) MoveCursorDown() {
-	if doc.Cursor.Line < len(doc.Lines) - 1 {
+	if doc.Cursor.Line < len(doc.Lines)-1 {
 		doc.Cursor.Line += 1
 		text := doc.Lines[doc.Cursor.Line]
 		if doc.Cursor.Character > len(text) {
@@ -73,7 +72,7 @@ func (doc *Document) MoveCursorRight() {
 	line := doc.Cursor.Line
 	if doc.Cursor.Character < len([]rune(doc.Lines[line])) {
 		doc.Cursor.Character += 1
-	} else if doc.Cursor.Line + 1 < len(doc.Lines) {
+	} else if doc.Cursor.Line+1 < len(doc.Lines) {
 		doc.Cursor.Character = 0
 		doc.Cursor.Line++
 	}
@@ -110,12 +109,11 @@ func (doc *Document) DeleteRightRune() {
 	if character < len(text) {
 		text := doc.Lines[line]
 		doc.Lines[line] = []rune(string(text[:character]) + string(text[character+1:]))
-	} else if line + 1 < len(doc.Lines) {
+	} else if line+1 < len(doc.Lines) {
 		doc.Lines[line] = []rune(string(doc.Lines[line]) + string(doc.Lines[line+1]))
 		doc.Lines = doc.Lines[:line+1]
 	}
 }
-
 
 var wordPattern = regexp.MustCompile(`(\pL+|\d+|[[:punct:]]+)\s*$`)
 
@@ -129,7 +127,7 @@ func (doc *Document) DeleteWord() {
 		stext := strings.TrimRight(string(text[:character]), " ")
 		allIndexes := wordPattern.FindAllStringIndex(stext, -1)
 		if len(allIndexes) > 0 {
-			loc := allIndexes[len(allIndexes) - 1]
+			loc := allIndexes[len(allIndexes)-1]
 			textbefore := stext[:loc[0]]
 			doc.Lines[line] = []rune(textbefore + string(text[character:]))
 			doc.Cursor.Character = len([]rune(textbefore))
@@ -144,7 +142,7 @@ func (doc *Document) InsertLine() {
 	text := []rune(doc.Lines[line])
 	doc.Lines = append(doc.Lines[:line+1], doc.Lines[line:]...)
 	doc.Lines[line] = text[:character]
-	doc.Lines[line + 1] = text[character:]
+	doc.Lines[line+1] = text[character:]
 
 	doc.Cursor.Line++
 	doc.Cursor.Character = 0

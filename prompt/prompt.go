@@ -5,13 +5,13 @@ package prompt
 import (
 	// "fmt"
 	// "runtime"
-	. "github.com/randy3k/rango/prompt/key"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
+	. "github.com/randy3k/rango/prompt/key"
 )
 
 type Prompt struct {
-	Quit bool
+	Quit   bool
 	Buffer *Buffer
 }
 

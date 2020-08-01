@@ -6,8 +6,8 @@ const (
 
 type Renderer struct {
 	terminal *Terminal
-	cursor ScreenCursor
-	maxLine int
+	cursor   ScreenCursor
+	maxLine  int
 }
 
 func NewRenderer(terminal *Terminal) *Renderer {
@@ -51,7 +51,7 @@ func (r *Renderer) Render(scr *Screen) {
 
 	for i := 0; i <= lastLine; i++ {
 		for j := 0; j < scr.Columns; j++ {
-			pos := i * scr.Columns + j
+			pos := i*scr.Columns + j
 			c := scr.chars[pos]
 			if c.Attributes != cursorAttr {
 				cursorAttr = c.Attributes
@@ -60,7 +60,7 @@ func (r *Renderer) Render(scr *Screen) {
 			}
 			t.WriteString(string(c.Value))
 		}
-		if i + 1 <= lastLine && scr.eol[i] {
+		if i+1 <= lastLine && scr.eol[i] {
 			t.WriteString("\r\n")
 		}
 	}

@@ -98,7 +98,7 @@ func (t *Terminal) ColorDepthFromTerm(term string) ColorDepth {
 	if term == "" || term == "dumb" || term == "unknown" {
 		return ColorDepth1Bit
 	} else if term == "xterm" || term == "xterm-color" || term == "xterm-16color" ||
-			term == "linux" || term == "eterm-color" {
+		term == "linux" || term == "eterm-color" {
 		return ColorDepth4Bits
 	} else {
 		return ColorDepth8Bits
@@ -150,18 +150,18 @@ func (t *Terminal) ColorSequence(c Char) string {
 	} else if t.colorDepth == ColorDepth4Bits {
 		if fg := c.Foreground.Code4Bits(); fg >= 0 {
 			if fg <= 7 {
-				s += fmt.Sprintf("\x1b[%dm", 30 + fg)
+				s += fmt.Sprintf("\x1b[%dm", 30+fg)
 			} else {
 				// high intensity
-				s += fmt.Sprintf("\x1b[%dm", 90 + fg - 8)
+				s += fmt.Sprintf("\x1b[%dm", 90+fg-8)
 			}
 		}
 		if bg := c.Background.Code4Bits(); bg >= 0 {
 			if bg <= 7 {
-				s += fmt.Sprintf("\x1b[%dm", 40 + bg)
+				s += fmt.Sprintf("\x1b[%dm", 40+bg)
 			} else {
 				// high intensity
-				s += fmt.Sprintf("\x1b[%dm", 100 + bg - 8)
+				s += fmt.Sprintf("\x1b[%dm", 100+bg-8)
 			}
 		}
 	}
@@ -179,7 +179,6 @@ func (t *Terminal) MoveCursorDown(x int) { // CUD
 		t.WriteString(fmt.Sprintf("\x1b[%dB", x))
 	}
 }
-
 
 func (t *Terminal) MoveCursorLeft(x int) { // CUF
 	if x > 0 {

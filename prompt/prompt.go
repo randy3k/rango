@@ -13,6 +13,7 @@ import (
 type Prompt struct {
 	Quit   bool
 	Buffer *Buffer
+	Window *Window
 }
 
 func NewPrompt() *Prompt {
@@ -46,7 +47,18 @@ func (p *Prompt) Show(message string) {
 		p.Buffer = NewBuffer(lexer, style)
 	}
 	buffer := p.Buffer
-	container := NewContainer(buffer)
+
+	if p.Window == nil {
+		p.Window = NewWindow(buffer)
+	}
+	window := p.Window
+
+	_redraw := func() {
+		screen := NewScreen(t.Lines, t.Columns)
+		window.WriteToScreen(screen)
+		renderer.Render(screen)
+	}
+	_redraw()
 
 	// loop:
 	for !p.Quit {
@@ -55,9 +67,7 @@ func (p *Prompt) Show(message string) {
 		case dispatch := <-kbDispatch:
 			hand := dispatch.Binding.Handler.(func(*Event))
 			hand(&Event{Keys: dispatch.Binding.Keys, Data: dispatch.Data, Prompt: p})
-			screen := NewScreen(t.Lines, t.Columns)
-			container.WriteToScreen(screen)
-			renderer.Render(screen)
+			_redraw()
 		case kp := <-keyPress:
 			kProcessor.Feed(kp)
 		case input := <-kbInput:

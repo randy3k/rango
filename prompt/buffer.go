@@ -22,18 +22,6 @@ func NewBuffer(lexer chroma.Lexer, style *chroma.Style) *Buffer {
 	return buf
 }
 
-type Content struct {
-	Lines  []Chars
-	Cursor DocumentCursor
-}
-
-func NewContent(lines []Chars, cursor DocumentCursor) *Content {
-	return &Content{
-		Lines:  lines,
-		Cursor: cursor,
-	}
-}
-
 func (buf *Buffer) SetText(t string) {
 	buf.Document.SetText(t)
 }

@@ -6,6 +6,7 @@ const (
 
 type Renderer struct {
 	terminal *Terminal
+	previousScreen *Screen
 	cursor   ScreenCursor
 	maxLine  int
 }
@@ -43,8 +44,8 @@ func (r *Renderer) Render(scr *Screen) {
 			break
 		}
 	}
-	lastLine = max(lastLine, scr.Cursor.Line)
 
+	lastLine = max(lastLine, scr.Cursor.Line)
 	// for clearing screen in next rendering
 	r.maxLine = lastLine
 	r.cursor = scr.Cursor
@@ -70,4 +71,5 @@ func (r *Renderer) Render(scr *Screen) {
 	t.MoveCursorDown(r.cursor.Line)
 	t.MoveCursorLeft(r.cursor.Column)
 	t.ShowCursor()
+	t.Flush()
 }

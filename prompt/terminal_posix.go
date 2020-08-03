@@ -15,6 +15,8 @@ import (
 
 type Terminal struct {
 	tty        *tty.TTY
+
+	outputBuf string
 	colorDepth ColorDepth
 
 	cleanup func() error
@@ -115,8 +117,18 @@ func (t *Terminal) Resize() {
 
 func (t *Terminal) WriteString(s string) {
 	// TODO: buffer stdout
-	t.tty.Output().WriteString(s)
+	t.mu.Lock()
+	t.outputBuf += s
+	t.mu.Unlock()
 }
+
+func (t* Terminal) Flush() {
+	t.mu.Lock()
+	t.tty.Output().WriteString(t.outputBuf)
+	t.outputBuf = ""
+	t.mu.Unlock()
+}
+
 
 func (t *Terminal) WaitForInput(timeout int) bool {
 	rFdSet := &unix.FdSet{}

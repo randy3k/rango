@@ -12,14 +12,14 @@ func Print(x interface{}) {
 
 var Printf = fmt.Printf
 
-func DebugPrint(x interface{}) error {
+func DebugPrintln(x ...interface{}) error {
 	file, err := os.Create("/tmp/rango")
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	_, err = io.WriteString(file, fmt.Sprintf("%v\n", x))
+	_, err = io.WriteString(file, fmt.Sprint(x...) + "\n")
 	if err != nil {
 		panic(err)
 	}

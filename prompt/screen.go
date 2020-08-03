@@ -15,7 +15,6 @@ type Screen struct {
 	Cursor  ScreenCursor
 	chars   []Char
 	eol     []bool
-	dirty   []bool
 }
 
 func NewScreen(h int, w int) *Screen {
@@ -24,7 +23,6 @@ func NewScreen(h int, w int) *Screen {
 		Lines:   h,
 		chars:   make([]Char, w*h),
 		eol:     make([]bool, h),
-		dirty:   make([]bool, h),
 	}
 }
 
@@ -53,12 +51,6 @@ func (scr *Screen) String() string {
 	return s
 }
 
-func (scr *Screen) Reset() {
-	scr.chars = make([]Char, scr.Columns*scr.Lines)
-	scr.eol = make([]bool, scr.Lines)
-	scr.dirty = make([]bool, scr.Lines)
-}
-
 func (scr *Screen) Feed(c Char) (int, int) {
 	line := scr.Cursor.Line
 	col := scr.Cursor.Column
@@ -68,7 +60,6 @@ func (scr *Screen) Feed(c Char) (int, int) {
 	}
 	pos := scr.Columns*scr.Cursor.Line + scr.Cursor.Column
 	scr.chars[pos] = c
-	scr.dirty[scr.Cursor.Line] = true
 	scr.Cursor.Column += c.Width
 	return line, col
 }
@@ -79,7 +70,6 @@ func (scr *Screen) LineFeed() {
 	if scr.Cursor.Line == scr.Lines {
 		scr.chars = append(scr.chars[scr.Columns:], make([]Char, scr.Columns)...)
 		scr.eol = append(scr.eol[1:], false)
-		scr.dirty = append(scr.dirty[1:], false)
 		scr.Cursor.Line -= 1
 	}
 }

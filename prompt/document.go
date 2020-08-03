@@ -111,7 +111,7 @@ func (doc *Document) DeleteRightRune() {
 		doc.Lines[line] = []rune(string(text[:character]) + string(text[character+1:]))
 	} else if line+1 < len(doc.Lines) {
 		doc.Lines[line] = []rune(string(doc.Lines[line]) + string(doc.Lines[line+1]))
-		doc.Lines = doc.Lines[:line+1]
+		doc.Lines = append(doc.Lines[:line+1], doc.Lines[line+2:]...)
 	}
 }
 

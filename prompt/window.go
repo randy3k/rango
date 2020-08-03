@@ -21,18 +21,21 @@ func NewWindow(buffer *Buffer) *Window {
 	}
 }
 
-func (win *Window) WriteToScreen(scr *Screen) {
-	content := win.Buffer.CreateContent(scr.Columns, scr.Lines)
+func (win *Window) WriteToScreen(screen *Screen) {
+	content := win.Buffer.CreateContent(screen.Columns, screen.Lines)
 	previousOffset := win.Info.ScrollOffset
-	lines, eol, offset, cursor := content.GetLines(scr.Columns, scr.Lines, previousOffset)
+	lines, eol, offset, cursor := content.GetLines(screen.Columns, screen.Lines, previousOffset)
 
 	for i, l := range lines {
-		scr.SetCharsAt(i, 0, l, eol[i])
+		screen.SetCharsAt(i, 0, l)
+		if eol[i] {
+			screen.chars[screen.Columns*(i+1) - 1].EOL = true
+		}
 	}
-	scr.Cursor = cursor
+	screen.Cursor = cursor
 
 	win.Info = &WindowRenderInfo{
-		Width: scr.Columns,
+		Width: screen.Columns,
 		Height: len(lines),
 		ScrollOffset: offset,
 	}

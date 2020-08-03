@@ -1,6 +1,7 @@
 package prompt
 
 import (
+	// "errors"
 	"strings"
 )
 
@@ -14,7 +15,6 @@ type Screen struct {
 	Columns int
 	Cursor  ScreenCursor
 	chars   []Char
-	eol     []bool
 }
 
 func NewScreen(h int, w int) *Screen {
@@ -22,17 +22,16 @@ func NewScreen(h int, w int) *Screen {
 		Columns: w,
 		Lines:   h,
 		chars:   make([]Char, w*h),
-		eol:     make([]bool, h),
 	}
 }
 
-func (scr *Screen) String() string {
+func (screen *Screen) String() string {
 	s := ""
-	for i := 0; i < scr.Lines; i++ {
-		line := make([]string, scr.Columns)
-		for j := 0; j < scr.Columns; {
-			pos := scr.Columns*i + j
-			c := scr.chars[pos]
+	for i := 0; i < screen.Lines; i++ {
+		line := make([]string, screen.Columns)
+		for j := 0; j < screen.Columns; {
+			pos := screen.Columns*i + j
+			c := screen.chars[pos]
 			if c.Value == 0 {
 				line[j] = " "
 				j += 1
@@ -42,7 +41,7 @@ func (scr *Screen) String() string {
 			}
 		}
 		s += "|" + strings.Join(line, "")
-		if scr.eol[i] {
+		if screen.IsLineEOL(i) {
 			s += "|\n"
 		} else {
 			s += "+\n"
@@ -51,58 +50,77 @@ func (scr *Screen) String() string {
 	return s
 }
 
-func (scr *Screen) Feed(c Char) (int, int) {
-	line := scr.Cursor.Line
-	col := scr.Cursor.Column
-	if scr.Cursor.Column >= scr.Columns {
-		scr.eol[line] = true
-		scr.LineFeed()
+func (screen *Screen) Feed(c Char) (int, int) {
+	line := screen.Cursor.Line
+	col := screen.Cursor.Column
+	if screen.Cursor.Column >= screen.Columns {
+		screen.chars[screen.Columns*(line+1) - 1].EOL = true
+		screen.LineFeed()
 	}
-	pos := scr.Columns*scr.Cursor.Line + scr.Cursor.Column
-	scr.chars[pos] = c
-	scr.Cursor.Column += c.Width
+	pos := screen.Columns*screen.Cursor.Line + screen.Cursor.Column
+	screen.chars[pos] = c
+	screen.Cursor.Column += c.Width
 	return line, col
 }
 
-func (scr *Screen) LineFeed() {
-	scr.Cursor.Column = 0
-	scr.Cursor.Line += 1
-	if scr.Cursor.Line == scr.Lines {
-		scr.chars = append(scr.chars[scr.Columns:], make([]Char, scr.Columns)...)
-		scr.eol = append(scr.eol[1:], false)
-		scr.Cursor.Line -= 1
+func (screen *Screen) IsLineEOL(line int) bool {
+	return screen.chars[screen.Columns*(line+1) - 1].EOL
+}
+
+func (screen *Screen) LineFeed() {
+	screen.Cursor.Column = 0
+	screen.Cursor.Line += 1
+	if screen.Cursor.Line == screen.Lines {
+		screen.chars = append(screen.chars[screen.Columns:], make([]Char, screen.Columns)...)
+		screen.Cursor.Line -= 1
 	}
 }
 
-func (scr *Screen) GoTo(line int, col int) {
-	scr.Cursor.Line = max(0, min(line, scr.Lines-1))
-	scr.Cursor.Column = max(0, min(col, scr.Columns-1))
+func (screen *Screen) GoTo(line int, col int) {
+	screen.Cursor.Line = max(0, min(line, screen.Lines-1))
+	screen.Cursor.Column = max(0, min(col, screen.Columns-1))
 }
 
-func (scr *Screen) SetCharAt(line int, col int, c Char) {
-	oldline := scr.Cursor.Line
-	oldcol := scr.Cursor.Column
-	scr.GoTo(line, col)
-	scr.Feed(c)
-	scr.GoTo(oldline, oldcol)
+func (screen *Screen) SetCharAt(line int, col int, c Char) {
+	oldline := screen.Cursor.Line
+	oldcol := screen.Cursor.Column
+	screen.GoTo(line, col)
+	screen.Feed(c)
+	screen.GoTo(oldline, oldcol)
 }
 
-func (scr *Screen) SetCharsAt(line int, col int, cs []Char, eol bool) {
-	oldline := scr.Cursor.Line
-	oldcol := scr.Cursor.Column
-	scr.GoTo(line, col)
+func (screen *Screen) SetCharsAt(line int, col int, cs []Char) {
+	oldline := screen.Cursor.Line
+	oldcol := screen.Cursor.Column
+	screen.GoTo(line, col)
 	for _, c := range cs {
-		scr.Feed(c)
+		screen.Feed(c)
 	}
-	scr.eol[scr.Cursor.Line] = eol
-	scr.GoTo(oldline, oldcol)
+	screen.GoTo(oldline, oldcol)
 }
 
-func (scr *Screen) IsLineEmpty(line int) bool {
-	for j := 0; j < scr.Columns; j++ {
-		if scr.chars[line*scr.Columns+j].Value > 0 {
+func (screen *Screen) IsLineEmpty(line int) bool {
+	for j := 0; j < screen.Columns; j++ {
+		if screen.chars[line*screen.Columns+j].Value > 0 {
 			return false
 		}
 	}
 	return true
 }
+
+// func (screen *Screen) Diff(pScreen *Screen) ([]bool, []int, error) {
+// 	if screen.Lines != pScreen.Lines || screen.Columns != pScreen.Columns {
+// 		return []bool{}, errors.New("screen size not match")
+// 	}
+// 	diff := make([]bool, screen.Lines)
+// 	loc := make([]int, screen.Lines)
+// 	for i := 0; i < screen.Lines; i++ {
+// 		for j := 0; j < screen.Columns; {
+// 			pos := screen.Columns*i + j
+// 			if screen.chars[pos] != pScreen.chars[pos] {
+// 				diff[i] = true
+// 				loc[i] = j
+// 			}
+// 		}
+// 	}
+// }

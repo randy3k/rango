@@ -68,7 +68,7 @@ func (content *Content) GetLines(width, maxHeight, offset int) ([]Chars, []bool,
 	// if cursor is outside of the viewport
 	if cursorLine < offset {
 		offset = cursorLine
-	} else if cursorLine + 1 > offset + height {
+	} else if height == maxHeight && cursorLine + 1 > offset + height {
 		offset = cursorLine - height + 1
 	}
 

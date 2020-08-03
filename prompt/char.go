@@ -19,6 +19,7 @@ type Attributes struct {
 type Char struct {
 	Value rune
 	Width int
+	EOL   bool
 	Attributes
 }
 

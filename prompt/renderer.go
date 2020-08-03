@@ -17,7 +17,7 @@ func NewRenderer(terminal *Terminal) *Renderer {
 	}
 }
 
-func (r *Renderer) Render(scr *Screen) {
+func (r *Renderer) Render(screen *Screen) {
 	// TODO: diff previous screen
 
 	t := r.terminal
@@ -39,21 +39,21 @@ func (r *Renderer) Render(scr *Screen) {
 
 	// find the last non-empty line
 	var lastLine int
-	for lastLine = scr.Lines - 1; lastLine >= 0; lastLine-- {
-		if !scr.IsLineEmpty(lastLine) {
+	for lastLine = screen.Lines - 1; lastLine >= 0; lastLine-- {
+		if !screen.IsLineEmpty(lastLine) {
 			break
 		}
 	}
 
-	lastLine = max(lastLine, scr.Cursor.Line)
+	lastLine = max(lastLine, screen.Cursor.Line)
 	// for clearing screen in next rendering
 	r.maxLine = lastLine
-	r.cursor = scr.Cursor
+	r.cursor = screen.Cursor
 
 	for i := 0; i <= lastLine; i++ {
-		for j := 0; j < scr.Columns; j++ {
-			pos := i*scr.Columns + j
-			c := scr.chars[pos]
+		for j := 0; j < screen.Columns; j++ {
+			pos := i*screen.Columns + j
+			c := screen.chars[pos]
 			if c.Attributes != cursorAttr {
 				cursorAttr = c.Attributes
 				t.WriteString(AttrOff)
@@ -61,7 +61,7 @@ func (r *Renderer) Render(scr *Screen) {
 			}
 			t.WriteString(string(c.Value))
 		}
-		if i+1 <= lastLine && scr.eol[i] {
+		if i+1 <= lastLine && screen.IsLineEOL(i) {
 			t.WriteString("\r\n")
 		}
 	}

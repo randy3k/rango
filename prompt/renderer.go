@@ -18,7 +18,7 @@ func NewRenderer(terminal *Terminal) *Renderer {
 }
 
 func (r *Renderer) Render(screen *Screen) {
-	diff, _ := screen.Diff(r.previousScreen)
+	diff, pos := screen.Diff(r.previousScreen)
 
 	t := r.terminal
 
@@ -28,7 +28,9 @@ func (r *Renderer) Render(screen *Screen) {
 
 	for i := 0; i <= r.maxLine; i++ {
 		if diff[i] {
+			t.MoveCursorRight(pos[i])
 			t.WriteString("\x1b[0K")
+			t.WriteString("\r")
 		}
 		if i < r.maxLine {
 			t.MoveCursorDown(1)
@@ -55,7 +57,8 @@ func (r *Renderer) Render(screen *Screen) {
 
 	for i := 0; i <= lastLine; i++ {
 		if diff[i] {
-			for j := 0; j < screen.Columns; j++ {
+			t.MoveCursorRight(pos[i])
+			for j := pos[i]; j < screen.Columns; j++ {
 				pos := i*screen.Columns + j
 				c := screen.chars[pos]
 				if c.Attributes != cursorAttr {
@@ -76,7 +79,7 @@ func (r *Renderer) Render(screen *Screen) {
 	t.MoveCursorUp(lastLine)
 	t.WriteString("\r")
 	t.MoveCursorDown(r.cursor.Line)
-	t.MoveCursorLeft(r.cursor.Column)
+	t.MoveCursorRight(r.cursor.Column)
 	t.ShowCursor()
 	t.Flush()
 

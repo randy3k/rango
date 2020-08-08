@@ -192,14 +192,14 @@ func (t *Terminal) MoveCursorDown(x int) { // CUD
 	}
 }
 
-func (t *Terminal) MoveCursorLeft(x int) { // CUF
+func (t *Terminal) MoveCursorLeft(x int) { // CUB
 	if x > 0 {
-		t.WriteString(fmt.Sprintf("\x1b[%dC", x))
+		t.WriteString(fmt.Sprintf("\x1b[%dD", x))
 	}
 }
 
-func (t *Terminal) MoveCursorRight(x int) { // CUB
+func (t *Terminal) MoveCursorRight(x int) { // CUF
 	if x > 0 {
-		t.WriteString(fmt.Sprintf("\x1b[%dD", x))
+		t.WriteString(fmt.Sprintf("\x1b[%dC", x))
 	}
 }

@@ -20,6 +20,8 @@ func NewRenderer(terminal *Terminal) *Renderer {
 func (r *Renderer) Render(screen *Screen) {
 	// TODO: diff previous screen
 
+	diff, _ := screen.Diff(r.previousScreen)
+
 	t := r.terminal
 
 	t.HideCursor()
@@ -27,7 +29,9 @@ func (r *Renderer) Render(screen *Screen) {
 	t.WriteString("\r")
 
 	for i := 0; i <= r.maxLine; i++ {
-		t.WriteString("\x1b[2K") // EL2
+		if diff[i] {
+			t.WriteString("\x1b[0K")
+		}
 		if i < r.maxLine {
 			t.MoveCursorDown(1)
 		}
@@ -51,17 +55,21 @@ func (r *Renderer) Render(screen *Screen) {
 	r.cursor = screen.Cursor
 
 	for i := 0; i <= lastLine; i++ {
-		for j := 0; j < screen.Columns; j++ {
-			pos := i*screen.Columns + j
-			c := screen.chars[pos]
-			if c.Attributes != cursorAttr {
-				cursorAttr = c.Attributes
-				t.WriteString(AttrOff)
-				t.WriteString(t.ColorSequence(c))
+		if diff[i] {
+			for j := 0; j < screen.Columns; j++ {
+				pos := i*screen.Columns + j
+				c := screen.chars[pos]
+				if c.Attributes != cursorAttr {
+					cursorAttr = c.Attributes
+					t.WriteString(AttrOff)
+					t.WriteString(t.ColorSequence(c))
+				}
+				t.WriteString(string(c.Value))
 			}
-			t.WriteString(string(c.Value))
-		}
-		if i+1 <= lastLine && screen.IsLineEOL(i) {
+			if i+1 <= lastLine && screen.IsLineEOL(i) {
+				t.WriteString("\r\n")
+			}
+		} else if i+1 <= lastLine {
 			t.WriteString("\r\n")
 		}
 	}
@@ -72,4 +80,6 @@ func (r *Renderer) Render(screen *Screen) {
 	t.MoveCursorLeft(r.cursor.Column)
 	t.ShowCursor()
 	t.Flush()
+
+	r.previousScreen = screen
 }

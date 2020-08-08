@@ -1,7 +1,6 @@
 package prompt
 
 import (
-	// "errors"
 	"strings"
 )
 
@@ -108,19 +107,27 @@ func (screen *Screen) IsLineEmpty(line int) bool {
 	return true
 }
 
-// func (screen *Screen) Diff(pScreen *Screen) ([]bool, []int, error) {
-// 	if screen.Lines != pScreen.Lines || screen.Columns != pScreen.Columns {
-// 		return []bool{}, errors.New("screen size not match")
-// 	}
-// 	diff := make([]bool, screen.Lines)
-// 	loc := make([]int, screen.Lines)
-// 	for i := 0; i < screen.Lines; i++ {
-// 		for j := 0; j < screen.Columns; {
-// 			pos := screen.Columns*i + j
-// 			if screen.chars[pos] != pScreen.chars[pos] {
-// 				diff[i] = true
-// 				loc[i] = j
-// 			}
-// 		}
-// 	}
-// }
+func (screen *Screen) Diff(pScreen *Screen) (diff []bool, loc []int) {
+	diff = make([]bool, screen.Lines)
+	loc = make([]int, screen.Lines)
+
+	if pScreen == nil || screen.Lines != pScreen.Lines || screen.Columns != pScreen.Columns {
+		for i := 0; i < screen.Lines; i++ {
+			diff[i] = true
+			loc[i] = 0
+		}
+		return
+	}
+
+	for i := 0; i < screen.Lines; i++ {
+		for j := 0; j < screen.Columns; j++ {
+			pos := screen.Columns*i + j
+			if screen.chars[pos] != pScreen.chars[pos] {
+				diff[i] = true
+				loc[i] = j
+				break
+			}
+		}
+	}
+	return
+}

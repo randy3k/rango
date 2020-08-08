@@ -6,6 +6,10 @@ import (
 	// "github.com/mattn/go-runewidth"
 )
 
+var wordPatternStart = regexp.MustCompile(`(\pL+|\d+|[[:punct:]]+)\s*$`)
+var wordPatternEnd = regexp.MustCompile(`^\s*(\pL+|\d+|[[:punct:]]+)`)
+
+
 type DocumentCursor struct {
 	Line      int
 	Character int
@@ -78,6 +82,49 @@ func (doc *Document) MoveCursorRight() {
 	}
 }
 
+func (doc *Document) MoveCursorByWordLeft() {
+	line := doc.Cursor.Line
+	character := doc.Cursor.Character
+	if character == 0 {
+		doc.MoveCursorLeft()
+	} else {
+		text := doc.Lines[line]
+		stext := strings.TrimRight(string(text[:character]), " ")
+		allIndexes := wordPatternStart.FindAllStringIndex(stext, -1)
+		if len(allIndexes) > 0 {
+			loc := allIndexes[len(allIndexes)-1]
+			textbefore := stext[:loc[0]]
+			doc.Cursor.Character = len([]rune(textbefore))
+		}
+	}
+}
+
+func (doc *Document) MoveCursorByWordRight() {
+	line := doc.Cursor.Line
+	character := doc.Cursor.Character
+	text := doc.Lines[line]
+	if character < len(text) {
+		text := doc.Lines[line]
+		stext := strings.TrimRight(string(text[character:]), " ")
+		allIndexes := wordPatternEnd.FindAllStringIndex(stext, -1)
+		if len(allIndexes) > 0 {
+			loc := allIndexes[0]
+			textafter := stext[:loc[1]]
+			doc.Cursor.Character += len([]rune(textafter))
+		}
+	} else {
+		doc.MoveCursorRight()
+	}
+}
+
+func (doc *Document) MoveCursorToBeginningOfLine() {
+	doc.Cursor.Character = 0
+}
+
+func (doc *Document) MoveCursorToEndOfLine() {
+	doc.Cursor.Character = len([]rune(doc.Lines[doc.Cursor.Line]))
+}
+
 func (doc *Document) InsertText(t string) {
 	line := doc.Cursor.Line
 	character := doc.Cursor.Character
@@ -90,7 +137,7 @@ func (doc *Document) DeleteLeftRune() {
 	line := doc.Cursor.Line
 	character := doc.Cursor.Character
 	if character > 0 {
-		text := []rune(doc.Lines[line])
+		text := doc.Lines[line]
 		doc.Lines[line] = []rune(string(text[:character-1]) + string(text[character:]))
 		doc.MoveCursorLeft()
 	} else if line > 0 {
@@ -105,7 +152,7 @@ func (doc *Document) DeleteLeftRune() {
 func (doc *Document) DeleteRightRune() {
 	line := doc.Cursor.Line
 	character := doc.Cursor.Character
-	text := []rune(doc.Lines[line])
+	text := doc.Lines[line]
 	if character < len(text) {
 		text := doc.Lines[line]
 		doc.Lines[line] = []rune(string(text[:character]) + string(text[character+1:]))
@@ -115,8 +162,6 @@ func (doc *Document) DeleteRightRune() {
 	}
 }
 
-var wordPattern = regexp.MustCompile(`(\pL+|\d+|[[:punct:]]+)\s*$`)
-
 func (doc *Document) DeleteWord() {
 	line := doc.Cursor.Line
 	character := doc.Cursor.Character
@@ -125,7 +170,7 @@ func (doc *Document) DeleteWord() {
 	} else {
 		text := doc.Lines[line]
 		stext := strings.TrimRight(string(text[:character]), " ")
-		allIndexes := wordPattern.FindAllStringIndex(stext, -1)
+		allIndexes := wordPatternStart.FindAllStringIndex(stext, -1)
 		if len(allIndexes) > 0 {
 			loc := allIndexes[len(allIndexes)-1]
 			textbefore := stext[:loc[0]]
@@ -139,7 +184,7 @@ func (doc *Document) InsertLine() {
 	line := doc.Cursor.Line
 	character := doc.Cursor.Character
 
-	text := []rune(doc.Lines[line])
+	text := doc.Lines[line]
 	doc.Lines = append(doc.Lines[:line+1], doc.Lines[line:]...)
 	doc.Lines[line] = text[:character]
 	doc.Lines[line+1] = text[character:]

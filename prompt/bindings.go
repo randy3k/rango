@@ -55,6 +55,30 @@ func (p *Prompt) Bindings() *KeyBindings {
 			},
 		},
 		{
+			Keys: []Key{Escape, "b"},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorByWordLeft()
+			},
+		},
+		{
+			Keys: []Key{Escape, "f"},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorByWordRight()
+			},
+		},
+		{
+			Keys: []Key{ControlA},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorToBeginningOfLine()
+			},
+		},
+		{
+			Keys: []Key{ControlE},
+			Handler: func(event *Event) {
+				event.Prompt.Buffer.Document.MoveCursorToEndOfLine()
+			},
+		},
+		{
 			Keys: []Key{"q"},
 			Handler: func(event *Event) {
 				// print("bye!\r\n")

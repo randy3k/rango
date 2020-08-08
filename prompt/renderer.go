@@ -18,8 +18,6 @@ func NewRenderer(terminal *Terminal) *Renderer {
 }
 
 func (r *Renderer) Render(screen *Screen) {
-	// TODO: diff previous screen
-
 	diff, _ := screen.Diff(r.previousScreen)
 
 	t := r.terminal
@@ -42,11 +40,12 @@ func (r *Renderer) Render(screen *Screen) {
 	cursorAttr := DefaultAttributes
 
 	// find the last non-empty line
-	var lastLine int
-	for lastLine = screen.Lines - 1; lastLine >= 0; lastLine-- {
+	lastLine := screen.Lines - 1
+	for lastLine >= 0 {
 		if !screen.IsLineEmpty(lastLine) {
 			break
 		}
+		lastLine--
 	}
 
 	lastLine = max(lastLine, screen.Cursor.Line)

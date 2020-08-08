@@ -1,4 +1,9 @@
-package prompt
+package layout
+
+import (
+	. "github.com/randy3k/rango/prompt/char"
+	. "github.com/randy3k/rango/prompt/terminal"
+)
 
 const (
 	AttrOff = "\x1b[0m"

@@ -1,3 +1,3 @@
 // +build windows
 
-package prompt
+package terminal

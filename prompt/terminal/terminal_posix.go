@@ -1,6 +1,6 @@
 // +build !windows
 
-package prompt
+package terminal
 
 import (
 	"os"
@@ -9,6 +9,7 @@ import (
 	// "math"
 	"fmt"
 
+	. "github.com/randy3k/rango/prompt/char"
 	"github.com/mattn/go-tty"
 	"golang.org/x/sys/unix"
 )

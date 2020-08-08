@@ -1,4 +1,4 @@
-package prompt
+package char
 
 import (
 	"github.com/alecthomas/chroma"

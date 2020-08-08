@@ -1,4 +1,9 @@
-package prompt
+package layout
+
+import (
+	. "github.com/randy3k/rango/prompt/char"
+)
+
 
 type Content struct {
 	Lines  []Chars

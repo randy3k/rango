@@ -1,7 +1,8 @@
-package prompt
+package layout
 
 import (
 	"strings"
+	. "github.com/randy3k/rango/prompt/char"
 )
 
 type ScreenCursor struct {

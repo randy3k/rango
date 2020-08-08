@@ -1,8 +1,10 @@
-package prompt
+package layout
 
 import (
 	// "bytes"
 	// "os"
+	. "github.com/randy3k/rango/prompt/char"
+	
 	"github.com/alecthomas/chroma"
 )
 

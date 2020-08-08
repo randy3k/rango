@@ -1,4 +1,4 @@
-package prompt
+package char
 
 import (
 	"image/color"

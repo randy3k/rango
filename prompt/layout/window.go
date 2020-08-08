@@ -1,4 +1,4 @@
-package prompt
+package layout
 
 
 type WindowRenderInfo struct {

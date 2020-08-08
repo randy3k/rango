@@ -8,6 +8,8 @@ import (
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	. "github.com/randy3k/rango/prompt/key"
+	. "github.com/randy3k/rango/prompt/layout"
+	. "github.com/randy3k/rango/prompt/terminal"
 )
 
 type Prompt struct {

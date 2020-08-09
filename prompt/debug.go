@@ -6,13 +6,7 @@ import (
 	"os"
 )
 
-func Print(x interface{}) {
-	fmt.Printf("%v\r\n", x)
-}
-
-var Printf = fmt.Printf
-
-func DebugPrintln(x ...interface{}) error {
+func debugPrintln(x ...interface{}) error {
 	file, err := os.Create("/tmp/rango")
 	if err != nil {
 		panic(err)

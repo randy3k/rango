@@ -9,7 +9,7 @@ import (
 	// "math"
 	"fmt"
 
-	. "github.com/randy3k/rango/prompt/char"
+	"github.com/randy3k/rango/prompt/char"
 	"github.com/mattn/go-tty"
 	"golang.org/x/sys/unix"
 )
@@ -151,7 +151,7 @@ func (t *Terminal) ShowCursor() { // DECTCEM
 	t.WriteString("\x1b[?25h")
 }
 
-func (t *Terminal) ColorSequence(c Char) string {
+func (t *Terminal) ColorSequence(c char.Char) string {
 	s := ""
 	if t.colorDepth == ColorDepth8Bits {
 		if fg := c.Foreground.Code8Bits(); fg >= 0 {

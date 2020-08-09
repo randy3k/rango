@@ -5,10 +5,10 @@ package prompt
 import (
 	// "fmt"
 	// "runtime"
-	"github.com/alecthomas/chroma/lexers"
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma"
 	. "github.com/randy3k/rango/prompt/key"
 	. "github.com/randy3k/rango/prompt/layout"
+	. "github.com/randy3k/rango/prompt/renderer"
 	. "github.com/randy3k/rango/prompt/terminal"
 )
 
@@ -16,14 +16,22 @@ type Prompt struct {
 	Quit   bool
 	Buffer *Buffer
 	Window *Window
+	message string
+	messageFun func() string
+	messageContinuationFun func(int) string
+	lexer chroma.Lexer
+	style *chroma.Style
 }
 
-func NewPrompt() *Prompt {
+func NewPrompt(options ...Option) *Prompt {
 	p := &Prompt{}
+	for _, option := range options {
+		option(p)
+	}
 	return p
 }
 
-func (p *Prompt) Show(message string) {
+func (p *Prompt) Show() {
 	p.Quit = false
 	// go func() {
 	// 	printf("%v\r\n", runtime.NumGoroutine())
@@ -43,21 +51,14 @@ func (p *Prompt) Show(message string) {
 
 	renderer := NewRenderer(t)
 
-	if p.Buffer == nil {
-		lexer := lexers.Get("python")
-		style := styles.Get("native")
-		p.Buffer = NewBuffer(lexer, style)
-	}
-	buffer := p.Buffer
+	p.Buffer = NewBuffer(p.lexer, p.style)
 
-	if p.Window == nil {
-		p.Window = NewWindow(buffer)
-	}
-	window := p.Window
+	margin := &Margin{}
+	p.Window = NewWindow(p.Buffer, margin)
 
 	_redraw := func() {
 		screen := NewScreen(t.Lines, t.Columns)
-		window.WriteToScreen(screen)
+		p.Window.WriteToScreen(screen)
 		renderer.Render(screen)
 	}
 	_redraw()

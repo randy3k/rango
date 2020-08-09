@@ -1,7 +1,8 @@
-package layout
+package renderer
 
 import (
 	. "github.com/randy3k/rango/prompt/char"
+	. "github.com/randy3k/rango/prompt/layout"
 	. "github.com/randy3k/rango/prompt/terminal"
 )
 
@@ -65,7 +66,7 @@ func (r *Renderer) Render(screen *Screen) {
 			t.MoveCursorRight(pos[i])
 			for j := pos[i]; j < screen.Columns; j++ {
 				pos := i*screen.Columns + j
-				c := screen.chars[pos]
+				c := screen.Chars[pos]
 				if c.Attributes != cursorAttr {
 					cursorAttr = c.Attributes
 					t.WriteString(AttrOff)

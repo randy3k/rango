@@ -2,11 +2,15 @@ package main
 
 import (
 	// "fmt"
-	// "github.com/alecthomas/chroma"
 	"github.com/randy3k/rango/prompt"
+	"github.com/alecthomas/chroma/lexers"
+	"github.com/alecthomas/chroma/styles"
 )
 
 func main() {
-	p := prompt.NewPrompt()
-	p.Show("> ")
+	p := prompt.NewPrompt(
+		prompt.WithMessage("> "),
+		prompt.WithLexerAndStyle(lexers.Get("python"), styles.Get("native")),
+	)
+	p.Show()
 }

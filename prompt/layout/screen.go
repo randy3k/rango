@@ -14,14 +14,14 @@ type Screen struct {
 	Lines   int
 	Columns int
 	Cursor  ScreenCursor
-	chars   []Char
+	Chars   []Char
 }
 
 func NewScreen(h int, w int) *Screen {
 	return &Screen{
 		Columns: w,
 		Lines:   h,
-		chars:   make([]Char, w*h),
+		Chars:   make([]Char, w*h),
 	}
 }
 
@@ -31,7 +31,7 @@ func (screen *Screen) String() string {
 		line := make([]string, screen.Columns)
 		for j := 0; j < screen.Columns; {
 			pos := screen.Columns*i + j
-			c := screen.chars[pos]
+			c := screen.Chars[pos]
 			if c.Value == 0 {
 				line[j] = " "
 				j += 1
@@ -54,24 +54,24 @@ func (screen *Screen) Feed(c Char) (int, int) {
 	line := screen.Cursor.Line
 	col := screen.Cursor.Column
 	if screen.Cursor.Column >= screen.Columns {
-		screen.chars[screen.Columns*(line+1) - 1].EOL = true
+		screen.Chars[screen.Columns*(line+1) - 1].EOL = true
 		screen.LineFeed()
 	}
 	pos := screen.Columns*screen.Cursor.Line + screen.Cursor.Column
-	screen.chars[pos] = c
+	screen.Chars[pos] = c
 	screen.Cursor.Column += c.Width
 	return line, col
 }
 
 func (screen *Screen) IsLineEOL(line int) bool {
-	return screen.chars[screen.Columns*(line+1) - 1].EOL
+	return screen.Chars[screen.Columns*(line+1) - 1].EOL
 }
 
 func (screen *Screen) LineFeed() {
 	screen.Cursor.Column = 0
 	screen.Cursor.Line += 1
 	if screen.Cursor.Line == screen.Lines {
-		screen.chars = append(screen.chars[screen.Columns:], make([]Char, screen.Columns)...)
+		screen.Chars = append(screen.Chars[screen.Columns:], make([]Char, screen.Columns)...)
 		screen.Cursor.Line -= 1
 	}
 }
@@ -101,7 +101,7 @@ func (screen *Screen) SetCharsAt(line int, col int, cs []Char) {
 
 func (screen *Screen) IsLineEmpty(line int) bool {
 	for j := 0; j < screen.Columns; j++ {
-		if screen.chars[line*screen.Columns+j].Value > 0 {
+		if screen.Chars[line*screen.Columns+j].Value > 0 {
 			return false
 		}
 	}
@@ -123,7 +123,7 @@ func (screen *Screen) Diff(pScreen *Screen) (diff []bool, loc []int) {
 	for i := 0; i < screen.Lines; i++ {
 		for j := 0; j < screen.Columns; j++ {
 			pos := screen.Columns*i + j
-			if screen.chars[pos] != pScreen.chars[pos] {
+			if screen.Chars[pos] != pScreen.Chars[pos] {
 				diff[i] = true
 				loc[i] = j
 				break

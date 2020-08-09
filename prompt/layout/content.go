@@ -17,7 +17,7 @@ func NewContent(lines []Chars, cursor DocumentCursor) *Content {
 	}
 }
 
-func (content *Content) GetLines(width, maxHeight, offset int) ([]Chars, []bool, int, ScreenCursor) {
+func (content *Content) Format(width, maxHeight, offset int) ([]Chars, []bool, int, ScreenCursor) {
 	lineFragments := make([]Chars, 0)
 	eol := make([]bool, 0)
 

@@ -9,87 +9,87 @@ func (p *Prompt) Bindings() *KeyBindings {
 		{
 			Keys: []Key{Up},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorUp()
+				event.Buffer.Document.MoveCursorUp()
 			},
 		},
 		{
 			Keys: []Key{Down},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorDown()
+				event.Buffer.Document.MoveCursorDown()
 			},
 		},
 		{
 			Keys: []Key{Right},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorRight()
+				event.Buffer.Document.MoveCursorRight()
 			},
 		},
 		{
 			Keys: []Key{Left},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorLeft()
+				event.Buffer.Document.MoveCursorLeft()
 			},
 		},
 		{
-			Keys: []Key{Escape, Enter},
+			Keys: []Key{Enter},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.InsertLine()
+				event.Buffer.Document.InsertLine()
 			},
 		},
 		{
 			Keys: []Key{BackSpace},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.DeleteLeftRune()
+				event.Buffer.Document.DeleteLeftRune()
 			},
 		},
 		{
 			Keys: []Key{Delete},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.DeleteRightRune()
+				event.Buffer.Document.DeleteRightRune()
 			},
 		},
 		{
 			Keys: []Key{Escape, BackSpace},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.DeleteWord()
+				event.Buffer.Document.DeleteWord()
 			},
 		},
 		{
 			Keys: []Key{Escape, "b"},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorByWordLeft()
+				event.Buffer.Document.MoveCursorByWordLeft()
 			},
 		},
 		{
 			Keys: []Key{Escape, "f"},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorByWordRight()
+				event.Buffer.Document.MoveCursorByWordRight()
 			},
 		},
 		{
 			Keys: []Key{ControlA},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorToBeginningOfLine()
+				event.Buffer.Document.MoveCursorToBeginningOfLine()
 			},
 		},
 		{
 			Keys: []Key{ControlE},
 			Handler: func(event *Event) {
-				event.Prompt.Buffer.Document.MoveCursorToEndOfLine()
+				event.Buffer.Document.MoveCursorToEndOfLine()
 			},
 		},
 		{
 			Keys: []Key{"q"},
 			Handler: func(event *Event) {
 				// print("bye!\r\n")
-				p.Quit = true
+				p.Quit()
 			},
 		},
 		{
 			Keys: []Key{Any},
 			Handler: func(event *Event) {
 				if len(event.Data) == 1 {
-					event.Prompt.Buffer.InsertText(string(event.Data[0]))
+					event.Buffer.InsertText(string(event.Data[0]))
 				}
 			},
 		},

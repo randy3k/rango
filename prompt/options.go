@@ -10,7 +10,22 @@ type Option func(p *Prompt)
 
 func WithMessage(s string) Option {
 	return func(p *Prompt) {
-		p.message = s
+		p.messageFunc = func() string {
+			return s
+		}
+	}
+}
+
+func WithMessageFunc(f func() string) Option {
+	return func(p *Prompt) {
+		p.messageFunc = f
+	}
+}
+
+
+func WithMessageContinuationFunc(f func(i int) string) Option {
+	return func(p *Prompt) {
+		p.messageContinuationFunc = f
 	}
 }
 

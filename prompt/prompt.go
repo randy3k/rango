@@ -13,12 +13,10 @@ import (
 )
 
 type Prompt struct {
-	Quit   bool
-	Buffer *Buffer
-	Window *Window
-	message string
-	messageFun func() string
-	messageContinuationFun func(int) string
+	quit   bool
+	window *Window
+	messageFunc func() string
+	messageContinuationFunc func(int) string
 	lexer chroma.Lexer
 	style *chroma.Style
 }
@@ -31,8 +29,13 @@ func NewPrompt(options ...Option) *Prompt {
 	return p
 }
 
+
+func (p *Prompt) Quit() {
+	p.quit = true
+}
+
 func (p *Prompt) Show() {
-	p.Quit = false
+	p.quit = false
 	// go func() {
 	// 	printf("%v\r\n", runtime.NumGoroutine())
 	// }()
@@ -51,25 +54,26 @@ func (p *Prompt) Show() {
 
 	renderer := NewRenderer(t)
 
-	p.Buffer = NewBuffer(p.lexer, p.style)
-
-	margin := &Margin{}
-	p.Window = NewWindow(p.Buffer, margin)
+	// TODO: persistent window
+	p.window = NewWindow(
+		NewBuffer(p.lexer, p.style),
+		NewPrefix(p.messageFunc, p.messageContinuationFunc),
+	)
 
 	_redraw := func() {
 		screen := NewScreen(t.Lines, t.Columns)
-		p.Window.WriteToScreen(screen)
+		p.window.WriteToScreen(screen)
 		renderer.Render(screen)
 	}
 	_redraw()
 
 	// loop:
-	for !p.Quit {
+	for !p.quit {
 		// caution: the case handler must not block
 		select {
 		case dispatch := <-kbDispatch:
-			hand := dispatch.Binding.Handler.(func(*Event))
-			hand(&Event{Keys: dispatch.Binding.Keys, Data: dispatch.Data, Prompt: p})
+			handler := dispatch.Binding.Handler.(func(*Event))
+			handler(NewEvent(dispatch.Binding.Keys, dispatch.Data, p))
 			_redraw()
 		case kp := <-keyPress:
 			kProcessor.Feed(kp)

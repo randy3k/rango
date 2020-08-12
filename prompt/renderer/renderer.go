@@ -74,7 +74,7 @@ func (r *Renderer) Render(screen *Screen) {
 				}
 				t.WriteString(string(c.Value))
 			}
-			if i+1 <= lastLine && screen.IsLineEOL(i) {
+			if i+1 <= lastLine && !screen.IsLineContinuation(i) {
 				t.WriteString("\r\n")
 			}
 		} else if i+1 <= lastLine {

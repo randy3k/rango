@@ -41,10 +41,10 @@ func (screen *Screen) String() string {
 			}
 		}
 		s += "|" + strings.Join(line, "")
-		if screen.IsLineEOL(i) {
-			s += "|\n"
-		} else {
+		if screen.IsLineContinuation(i) {
 			s += "+\n"
+		} else {
+			s += "|\n"
 		}
 	}
 	return s
@@ -54,7 +54,7 @@ func (screen *Screen) Feed(c Char) (int, int) {
 	line := screen.Cursor.Line
 	col := screen.Cursor.Column
 	if screen.Cursor.Column >= screen.Columns {
-		screen.Chars[screen.Columns*(line+1) - 1].EOL = true
+		screen.Chars[screen.Columns*(line+1) - 1].Continuation = true
 		screen.LineFeed()
 	}
 	pos := screen.Columns*screen.Cursor.Line + screen.Cursor.Column
@@ -63,8 +63,8 @@ func (screen *Screen) Feed(c Char) (int, int) {
 	return line, col
 }
 
-func (screen *Screen) IsLineEOL(line int) bool {
-	return screen.Chars[screen.Columns*(line+1) - 1].EOL
+func (screen *Screen) IsLineContinuation(line int) bool {
+	return screen.Chars[screen.Columns*(line+1) - 1].Continuation
 }
 
 func (screen *Screen) LineFeed() {
@@ -81,23 +81,6 @@ func (screen *Screen) GoTo(line int, col int) {
 	screen.Cursor.Column = max(0, min(col, screen.Columns-1))
 }
 
-func (screen *Screen) SetCharAt(line int, col int, c Char) {
-	oldline := screen.Cursor.Line
-	oldcol := screen.Cursor.Column
-	screen.GoTo(line, col)
-	screen.Feed(c)
-	screen.GoTo(oldline, oldcol)
-}
-
-func (screen *Screen) SetCharsAt(line int, col int, cs []Char) {
-	oldline := screen.Cursor.Line
-	oldcol := screen.Cursor.Column
-	screen.GoTo(line, col)
-	for _, c := range cs {
-		screen.Feed(c)
-	}
-	screen.GoTo(oldline, oldcol)
-}
 
 func (screen *Screen) IsLineEmpty(line int) bool {
 	for j := 0; j < screen.Columns; j++ {

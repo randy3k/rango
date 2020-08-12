@@ -32,7 +32,7 @@ func (buf *Buffer) InsertText(t string) {
 	buf.Document.InsertText(t)
 }
 
-func (buf *Buffer) GetChars() (chars Chars) {
+func (buf *Buffer) Highlight() (chars Chars) {
 	chars = make(Chars, 0)
 
 	if buf.lexer == nil || buf.style == nil {
@@ -66,6 +66,6 @@ func (buf *Buffer) GetChars() (chars Chars) {
 }
 
 func (buf *Buffer) CreateContent(width, height int) *Content {
-	lines := buf.GetChars().SplitBy('\n')
+	lines := buf.Highlight().SplitBy('\n')
 	return NewContent(lines, buf.Document.Cursor)
 }

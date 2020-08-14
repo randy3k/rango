@@ -53,7 +53,7 @@ func (screen *Screen) String() string {
 func (screen *Screen) Feed(c Char) (int, int) {
 	line := screen.Cursor.Line
 	col := screen.Cursor.Column
-	if screen.Cursor.Column >= screen.Columns {
+	if screen.Cursor.Column + c.Width > screen.Columns {
 		screen.Chars[screen.Columns*(line+1) - 1].Continuation = true
 		screen.LineFeed()
 	}
@@ -110,6 +110,10 @@ func (screen *Screen) Diff(pScreen *Screen) (diff []bool, loc []int) {
 				diff[i] = true
 				loc[i] = j
 				break
+			}
+			w := screen.Chars[pos].Width
+			if w > 0 {
+				j += w - 1
 			}
 		}
 	}

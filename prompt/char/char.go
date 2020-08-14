@@ -49,6 +49,14 @@ func ChromaStyleToAttributes(sty chroma.StyleEntry) Attributes {
 
 type Chars []Char
 
+func (chars Chars) Width() int {
+	w := 0
+	for _, c := range chars {
+		w += c.Width
+	}
+	return w
+}
+
 func (chars Chars) SplitBy(r rune) []Chars {
 	lines := make([]Chars, 0)
 	last := 0
@@ -62,20 +70,20 @@ func (chars Chars) SplitBy(r rune) []Chars {
 	return lines
 }
 
-func (chars Chars) SplitAt(at int) []Chars {
-	if at <= 0 {
+func (chars Chars) SplitEvery(width int) []Chars {
+	if width <= 0 {
 		panic("`at` should be >= 1")
 	}
 	lines := make([]Chars, 0)
 	last := 0
 	w := 0
 	for i, c := range chars {
-		if w >= at {
+		w += c.Width
+		if w > width {
 			lines = append(lines, chars[last:i])
 			last = i
 			w = 0
 		}
-		w += c.Width
 	}
 	lines = append(lines, chars[last:])
 	return lines

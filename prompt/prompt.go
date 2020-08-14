@@ -54,10 +54,23 @@ func (p *Prompt) Show() {
 
 	renderer := NewRenderer(t)
 
+	prefixFunc := func(x int) string {
+		if x == 0 {
+			if p.messageFunc != nil {
+				return p.messageFunc()
+			} else {
+				return ""
+			}
+		} else if p.messageContinuationFunc != nil {
+			return p.messageContinuationFunc(x)
+		} else {
+			return ""
+		}
+	}
+
 	// TODO: persistent window
 	p.window = NewWindow(
-		NewBuffer(p.lexer, p.style),
-		NewPrefix(p.messageFunc, p.messageContinuationFunc),
+		NewBuffer(p.lexer, p.style, prefixFunc),
 	)
 
 	_redraw := func() {

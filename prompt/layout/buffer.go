@@ -13,16 +13,21 @@ type Buffer struct {
 	Document *Document
 	lexer    *chroma.Lexer
 	style    *chroma.Style
+	prefixFunc func(int) string
 }
 
-func NewBuffer(lexer chroma.Lexer, style *chroma.Style) *Buffer {
+func NewBuffer(lexer chroma.Lexer, style *chroma.Style,
+		prefixFunc func(int) string) *Buffer {
+
 	buf := &Buffer{
 		Document: NewDocument(),
 		lexer:    &lexer,
 		style:    style,
+		prefixFunc: prefixFunc,
 	}
 	return buf
 }
+
 
 func (buf *Buffer) SetText(t string) {
 	buf.Document.SetText(t)
@@ -67,5 +72,20 @@ func (buf *Buffer) Highlight() (chars Chars) {
 
 func (buf *Buffer) CreateContent(width, height int) *Content {
 	lines := buf.Highlight().SplitBy('\n')
-	return NewContent(lines, buf.Document.Cursor)
+	prefix := ANSI(buf.prefixFunc(0))
+	prefixWidth := prefix.Width()
+
+	for i := range lines {
+		thisPrefix := ANSI(buf.prefixFunc(i))
+		thisPrefixWidth := thisPrefix.Width()
+		if thisPrefixWidth < prefixWidth {
+			for i := 0; i < prefixWidth - thisPrefixWidth; i++ {
+				thisPrefix = append(thisPrefix, NewChar(' ', DefaultAttributes))
+			}
+		} else if thisPrefixWidth > prefixWidth {
+			thisPrefix = thisPrefix[:prefixWidth]
+		}
+		lines[i] = append(thisPrefix, lines[i]...)
+	}
+	return NewContent(lines, buf.Document.Cursor, prefixWidth)
 }

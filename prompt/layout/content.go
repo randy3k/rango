@@ -8,24 +8,27 @@ import (
 type Content struct {
 	Lines  []Chars
 	Cursor DocumentCursor
+	PrefixWidth int
 }
 
-func NewContent(lines []Chars, cursor DocumentCursor) *Content {
+func NewContent(lines []Chars, cursor DocumentCursor, prefixWidth int) *Content {
 	return &Content{
 		Lines:  lines,
 		Cursor: cursor,
+		PrefixWidth: prefixWidth,
 	}
 }
 
-func (content *Content) GetHeightForLine(lineno, width int, prefixWidth int) int {
+
+func (content *Content) GetHeightForLine(lineno, width int) int {
 	h := 1;
-	w := prefixWidth
+	w := 0
 	for _, c := range content.Lines[lineno] {
-		if w >= width {
+		w += c.Width
+		if w > width {
 			h += 1
 			w = 0
 		}
-		w += c.Width
 	}
 	return h
 }

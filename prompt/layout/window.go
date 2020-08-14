@@ -3,38 +3,39 @@ package layout
 type WindowRenderInfo struct {
 	Width        int
 	Height       int
+	ScreenWidth int
+	ScreenHeight int
 	ScrollOffset int
+	ScreenCursor ScreenCursor
 }
 
 type Window struct {
 	Buffer *Buffer
-	Info   *WindowRenderInfo
-	prefix *Prefix
+	RenderInfo   *WindowRenderInfo
 }
 
-func NewWindow(buffer *Buffer, prefix *Prefix) *Window {
+func NewWindow(buffer *Buffer) *Window {
 	return &Window{
 		Buffer: buffer,
-		Info: &WindowRenderInfo{
+		RenderInfo: &WindowRenderInfo{
 			ScrollOffset: 1e8,
 		},
-		prefix: prefix,
 	}
 }
 
+
 func (win *Window) WriteToScreen(screen *Screen) {
 	content := win.Buffer.CreateContent(screen.Columns, screen.Lines)
-	prefixWidth := win.prefix.Width()
 
 	nlines := len(content.Lines)
 	totalHeight := 0
 	lineHeights := make([]int, nlines)
 	for i := 0; i < len(content.Lines); i++ {
-		lineHeights[i] = content.GetHeightForLine(i, screen.Columns, prefixWidth)
+		lineHeights[i] = content.GetHeightForLine(i, screen.Columns)
 		totalHeight += lineHeights[i]
 	}
 
-	offset := win.Info.ScrollOffset
+	offset := win.RenderInfo.ScrollOffset
 	height := screen.Lines
 
 	// if the window is short
@@ -54,6 +55,7 @@ func (win *Window) WriteToScreen(screen *Screen) {
 
 	bufferCursor := ScreenCursor{}
 
+	// find display region
 	iBegin := 0
 	deltaBegin := 0
 	for i, h := 0, lineHeights[0]; i < nlines; i++ {
@@ -77,7 +79,7 @@ func (win *Window) WriteToScreen(screen *Screen) {
 	}
 
 	for i := iBegin; i <= iEnd; i++ {
-		l := append(win.prefix.GetPrefix(i), content.Lines[i]...)
+		l := content.Lines[i]
 
 		jBegin := 0
 		if i == iBegin {
@@ -115,12 +117,12 @@ func (win *Window) WriteToScreen(screen *Screen) {
 
 		for j := jBegin; j < jEnd; j++ {
 			c := l[j]
-			if content.Cursor.Line == i && content.Cursor.Character + prefixWidth == j {
+			if content.Cursor.Line == i && content.Cursor.Character + content.PrefixWidth == j {
 				bufferCursor.Line, bufferCursor.Column = screen.Cursor.Line, screen.Cursor.Column
 			}
 			screen.Feed(c)
 		}
-		if content.Cursor.Line == i && content.Cursor.Character + prefixWidth >= jEnd {
+		if content.Cursor.Line == i && content.Cursor.Character + content.PrefixWidth >= jEnd {
 			bufferCursor.Line, bufferCursor.Column = screen.Cursor.Line, screen.Cursor.Column
 		}
 		if i < iEnd {
@@ -131,87 +133,20 @@ func (win *Window) WriteToScreen(screen *Screen) {
 	// TODO: set cursor to the focused component
 	screen.Cursor = bufferCursor
 
-	if screen.Cursor.Column == screen.Columns {
+	// render the cursor in next line
+	if screen.Cursor.Column >= screen.Columns {
 		if screen.Cursor.Line == screen.Lines - 1 {
-			// render the cursor in next line
 			offset++
 		}
 		screen.LineFeed()
 	}
 
-	win.Info = &WindowRenderInfo{
+	win.RenderInfo = &WindowRenderInfo{
 		Width:        screen.Columns,
-		Height:       0,
+		Height:       height,
+		ScreenWidth: screen.Columns,
+		ScreenHeight: screen.Lines,
 		ScrollOffset: offset,
+		ScreenCursor: screen.Cursor,
 	}
 }
-
-
-// func (content *Content) Format(width, maxHeight, offset int) ([]Chars, []bool, int, ScreenCursor) {
-// 	lineFragments := make([]Chars, 0)
-// 	eol := make([]bool, 0)
-
-// 	cursorLine := 0
-// 	cursorColumn := 0
-
-// 	for i, l := range content.Lines {
-// 		wl := l.SplitAt(width)
-// 		// get screen cursor position from document cursor
-// 		if content.Cursor.Line == i {
-// 			k := 0
-// 			for j, lf := range wl {
-// 				w := 0
-// 				for _, c := range lf {
-// 					if content.Cursor.Character <= k {
-// 						cursorLine = len(lineFragments) + j
-// 						cursorColumn = w
-// 						goto found_cursor
-// 					}
-// 					k++
-// 					w += c.Width
-// 				}
-// 				if content.Cursor.Character <= k {
-// 					cursorLine = len(lineFragments) + j
-// 					cursorColumn = w
-// 					goto found_cursor
-// 				}
-// 			}
-// 		found_cursor:
-// 			if cursorColumn >= width {
-// 				cursorLine++
-// 				cursorColumn = 0
-// 			}
-// 		}
-// 		for j, lf := range wl {
-// 			lineFragments = append(lineFragments, lf)
-// 			eol = append(eol, j+1 == len(wl))
-// 		}
-// 	}
-
-// 	totalHeight := len(lineFragments)
-
-// 	height := maxHeight
-
-// 	// if the window is short
-// 	if totalHeight < height {
-// 		offset = 0
-// 		height = totalHeight
-// 	}
-
-// 	// if scroll passes the last line
-// 	if offset+height > totalHeight {
-// 		offset = totalHeight - height
-// 	}
-
-// 	// if cursor is outside of the viewport
-// 	if cursorLine < offset {
-// 		offset = cursorLine
-// 	} else if height == maxHeight && cursorLine + 1 > offset + height {
-// 		offset = cursorLine - height + 1
-// 	}
-
-// 	return lineFragments[offset:(offset + height)],
-// 		eol[offset:(offset + height)],
-// 		offset,
-// 		ScreenCursor{Line: cursorLine - offset, Column: cursorColumn}
-// }

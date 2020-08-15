@@ -117,12 +117,12 @@ func (win *Window) WriteToScreen(screen *Screen) {
 
 		for j := jBegin; j < jEnd; j++ {
 			c := l[j]
-			if content.Cursor.Line == i && content.Cursor.Character + content.PrefixWidth == j {
+			if content.Cursor.Line == i && content.Cursor.Character + content.Width == j {
 				bufferCursor.Line, bufferCursor.Column = screen.Cursor.Line, screen.Cursor.Column
 			}
 			screen.Feed(c)
 		}
-		if content.Cursor.Line == i && content.Cursor.Character + content.PrefixWidth >= jEnd {
+		if content.Cursor.Line == i && content.Cursor.Character + content.Width >= jEnd {
 			bufferCursor.Line, bufferCursor.Column = screen.Cursor.Line, screen.Cursor.Column
 		}
 		if i < iEnd {

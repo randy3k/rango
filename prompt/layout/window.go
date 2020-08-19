@@ -1,5 +1,9 @@
 package layout
 
+import (
+	. "github.com/randy3k/rango/prompt/char"
+)
+
 type WindowRenderInfo struct {
 	Width        int
 	Height       int
@@ -34,8 +38,6 @@ func (win *Window) WriteToScreen(screen *Screen) {
 		totalHeight += lineHeights[i]
 	}
 
-	// debugPrintln("lineHeights: ", lineHeights)
-
 	offset := win.RenderInfo.ScrollOffset
 	height := screen.Lines
 
@@ -57,10 +59,38 @@ func (win *Window) WriteToScreen(screen *Screen) {
 	} else if height == screen.Lines && absCursorY + 1 > offset + height {
 		offset = absCursorY - height + 1
 	}
+	bufferCursor := ScreenCursor{Line: absCursorY - offset, Column: absCursorX}
 
+	win.writeBufferToScreen(screen, offset, height, lineHeights, content.Lines)
+
+	screen.Cursor = bufferCursor
+
+	if screen.Cursor.Column >= screen.Columns {
+		// render the cursor in next line
+		if screen.Cursor.Line == screen.Lines - 1 {
+			offset++
+		}
+		screen.LineFeed()
+	}
+
+	win.RenderInfo = &WindowRenderInfo{
+		Width:        screen.Columns,
+		Height:       height,
+		ScreenWidth: screen.Columns,
+		ScreenHeight: screen.Lines,
+		ScrollOffset: offset,
+		ScreenCursor: screen.Cursor,
+	}
+}
+
+
+func (win *Window) writeBufferToScreen(
+			screen *Screen, offset, height int, lineHeights []int, contentLines []Chars) {
 	// go home
 	screen.Cursor.Line = 0
 	screen.Cursor.Column = 0
+
+	nlines := len(lineHeights)
 
 	// find display region
 	iBegin := 0
@@ -86,7 +116,7 @@ func (win *Window) WriteToScreen(screen *Screen) {
 	}
 
 	for i := iBegin; i <= iEnd; i++ {
-		l := content.Lines[i]
+		l := contentLines[i]
 
 		jBegin := 0
 		if i == iBegin {
@@ -129,25 +159,5 @@ func (win *Window) WriteToScreen(screen *Screen) {
 		if i < iEnd {
 			screen.LineFeed()
 		}
-	}
-
-	screen.Cursor.Line = absCursorY - offset
-	screen.Cursor.Column = absCursorX
-
-	if screen.Cursor.Column >= screen.Columns {
-		// render the cursor in next line
-		if screen.Cursor.Line == screen.Lines - 1 {
-			offset++
-		}
-		screen.LineFeed()
-	}
-
-	win.RenderInfo = &WindowRenderInfo{
-		Width:        screen.Columns,
-		Height:       height,
-		ScreenWidth: screen.Columns,
-		ScreenHeight: screen.Lines,
-		ScrollOffset: offset,
-		ScreenCursor: screen.Cursor,
 	}
 }

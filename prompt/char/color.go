@@ -302,11 +302,18 @@ func (c Color) Code4Bits() int {
 	if code, ok := colorCode4BitsCache[x]; ok {
 		return code
 	}
-	r := uint8((x >> 16) & 0xff)
-	g := uint8((x >> 8) & 0xff)
-	b := uint8(x & 0xff)
-	var code int
-	code = ColorPalette4Bits.Index(color.RGBA{r, g, b, 0xff})
+	if x < 16 {
+		colorCode4BitsCache[x] = x
+		return x
+	} else if x < 256 {
+		code := ColorPalette4Bits.Index(ColorPalette8Bits[x])
+		colorCode4BitsCache[x] = code
+		return code
+	}
+	r := uint8((x >> 24) & 0xff)
+	g := uint8((x >> 16) & 0xff)
+	b := uint8((x >> 8) & 0xff)
+	code := ColorPalette4Bits.Index(color.RGBA{r, g, b, 0xff})
 	colorCode4BitsCache[x] = code
 	return code
 }
@@ -321,11 +328,14 @@ func (c Color) Code8Bits() int {
 	if code, ok := colorCode8BitsCache[x]; ok {
 		return code
 	}
-	r := uint8((x >> 16) & 0xff)
-	g := uint8((x >> 8) & 0xff)
-	b := uint8(x & 0xff)
-	var code int
-	code = ColorPalette8Bits.Index(color.RGBA{r, g, b, 0xff})
+	if x < 256 {
+		colorCode4BitsCache[x] = x
+		return x
+	}
+	r := uint8((x >> 24) & 0xff)
+	g := uint8((x >> 16) & 0xff)
+	b := uint8((x >> 8) & 0xff)
+	code := ColorPalette8Bits.Index(color.RGBA{r, g, b, 0xff})
 	colorCode8BitsCache[x] = code
 	return code
 }

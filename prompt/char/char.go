@@ -39,7 +39,7 @@ func (c Char) String() string {
 
 func ChromaStyleToAttributes(sty chroma.StyleEntry) Attributes {
 	return Attributes{
-		Foreground: Color(sty.Colour),
+		Foreground: Color(int(sty.Colour) << 8),
 		Bold:       sty.Bold == chroma.Yes,
 		Italic:     sty.Italic == chroma.Yes,
 		Underline:  sty.Underline == chroma.Yes,

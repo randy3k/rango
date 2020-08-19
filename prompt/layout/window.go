@@ -23,7 +23,6 @@ func NewWindow(buffer *Buffer) *Window {
 	}
 }
 
-
 func (win *Window) WriteToScreen(screen *Screen) {
 	content := win.Buffer.CreateContent(screen.Columns, screen.Lines)
 
@@ -34,6 +33,8 @@ func (win *Window) WriteToScreen(screen *Screen) {
 		lineHeights[i] = content.GetHeightForLine(i, screen.Columns)
 		totalHeight += lineHeights[i]
 	}
+
+	// debugPrintln("lineHeights: ", lineHeights)
 
 	offset := win.RenderInfo.ScrollOffset
 	height := screen.Lines
@@ -49,11 +50,17 @@ func (win *Window) WriteToScreen(screen *Screen) {
 		offset = totalHeight - height
 	}
 
+	// move cursor if it is out of the viewport
+	absCursorY, absCursorX := content.GetAbsoluteCursorPosition(screen.Columns)
+	if absCursorY < offset {
+		offset = absCursorY
+	} else if height == screen.Lines && absCursorY + 1 > offset + height {
+		offset = absCursorY - height + 1
+	}
+
 	// go home
 	screen.Cursor.Line = 0
 	screen.Cursor.Column = 0
-
-	bufferCursor := ScreenCursor{}
 
 	// find display region
 	iBegin := 0
@@ -117,24 +124,18 @@ func (win *Window) WriteToScreen(screen *Screen) {
 
 		for j := jBegin; j < jEnd; j++ {
 			c := l[j]
-			if content.Cursor.Line == i && content.Cursor.Character + content.Width == j {
-				bufferCursor.Line, bufferCursor.Column = screen.Cursor.Line, screen.Cursor.Column
-			}
 			screen.Feed(c)
-		}
-		if content.Cursor.Line == i && content.Cursor.Character + content.Width >= jEnd {
-			bufferCursor.Line, bufferCursor.Column = screen.Cursor.Line, screen.Cursor.Column
 		}
 		if i < iEnd {
 			screen.LineFeed()
 		}
 	}
 
-	// TODO: set cursor to the focused component
-	screen.Cursor = bufferCursor
+	screen.Cursor.Line = absCursorY - offset
+	screen.Cursor.Column = absCursorX
 
-	// render the cursor in next line
 	if screen.Cursor.Column >= screen.Columns {
+		// render the cursor in next line
 		if screen.Cursor.Line == screen.Lines - 1 {
 			offset++
 		}

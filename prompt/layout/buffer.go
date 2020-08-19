@@ -73,19 +73,19 @@ func (buf *Buffer) Highlight() (chars Chars) {
 func (buf *Buffer) CreateContent(width, height int) *Content {
 	lines := buf.Highlight().SplitBy('\n')
 	prefix := ANSI(buf.prefixFunc(0))
-	prefixWidth := prefix.Width()
+	prefixLen := len(prefix)
 
 	for i := range lines {
 		thisPrefix := ANSI(buf.prefixFunc(i))
-		thisPrefixWidth := thisPrefix.Width()
-		if thisPrefixWidth < prefixWidth {
-			for i := 0; i < prefixWidth - thisPrefixWidth; i++ {
+		thisPrefixLen := len(thisPrefix)
+		if thisPrefixLen < prefixLen {
+			for i := 0; i < prefixLen - thisPrefixLen; i++ {
 				thisPrefix = append(thisPrefix, NewChar(' ', DefaultAttributes))
 			}
-		} else if thisPrefixWidth > prefixWidth {
-			thisPrefix = thisPrefix[:prefixWidth]
+		} else if thisPrefixLen > prefixLen {
+			thisPrefix = thisPrefix[:prefixLen]
 		}
 		lines[i] = append(thisPrefix, lines[i]...)
 	}
-	return NewContent(lines, buf.Document.Cursor, prefixWidth)
+	return NewContent(lines, buf.Document.Cursor, prefixLen)
 }

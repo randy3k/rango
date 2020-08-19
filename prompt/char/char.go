@@ -19,7 +19,6 @@ type Attributes struct {
 type Char struct {
 	Value rune
 	Width int
-	Continuation   bool
 	Attributes
 }
 
@@ -82,7 +81,7 @@ func (chars Chars) SplitEvery(width int) []Chars {
 		if w > width {
 			lines = append(lines, chars[last:i])
 			last = i
-			w = 0
+			w = c.Width
 		}
 	}
 	lines = append(lines, chars[last:])

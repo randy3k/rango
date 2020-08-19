@@ -13,15 +13,15 @@ type heightCacheKey struct {
 type Content struct {
 	Lines  []Chars
 	Cursor DocumentCursor
-	Width int
+	PrefixLen int
 	heightCache map[heightCacheKey]int
 }
 
-func NewContent(lines []Chars, cursor DocumentCursor, width int) *Content {
+func NewContent(lines []Chars, cursor DocumentCursor, prefixLen int) *Content {
 	return &Content{
 		Lines:  lines,
 		Cursor: cursor,
-		Width: width,
+		PrefixLen: prefixLen,
 		heightCache: map[heightCacheKey]int{},
 	}
 }
@@ -37,9 +37,34 @@ func (content *Content) GetHeightForLine(lineno, width int) int {
 		w += c.Width
 		if w > width {
 			h += 1
-			w = 0
+			w = c.Width
 		}
 	}
 	content.heightCache[heightCacheKey{lineno, width}] = h
 	return h
+}
+
+
+
+func (content *Content) GetAbsoluteCursorPosition(width int) (int, int) {
+	cumHeight := 0
+	for i, l := range content.Lines {
+		h := 1
+		w := 0
+		for j, c := range l {
+			w += c.Width
+			if w > width {
+				h += 1
+				w = c.Width
+			}
+			if content.Cursor.Line == i && content.Cursor.Character + content.PrefixLen == j {
+				return cumHeight, w - c.Width
+			}
+		}
+		if content.Cursor.Line == i && content.Cursor.Character + content.PrefixLen >= len(l) {
+			return cumHeight, len(l)
+		}
+		cumHeight += h
+	}
+	return -1, -1
 }

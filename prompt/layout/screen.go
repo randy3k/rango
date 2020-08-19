@@ -10,18 +10,23 @@ type ScreenCursor struct {
 	Column int
 }
 
+type Cell struct {
+	Continuation bool
+	Char
+}
+
 type Screen struct {
 	Lines   int
 	Columns int
 	Cursor  ScreenCursor
-	Chars   []Char
+	Cells   []Cell
 }
 
 func NewScreen(h int, w int) *Screen {
 	return &Screen{
 		Columns: w,
 		Lines:   h,
-		Chars:   make([]Char, w*h),
+		Cells:   make([]Cell, w*h),
 	}
 }
 
@@ -31,7 +36,7 @@ func (screen *Screen) String() string {
 		line := make([]string, screen.Columns)
 		for j := 0; j < screen.Columns; {
 			pos := screen.Columns*i + j
-			c := screen.Chars[pos]
+			c := screen.Cells[pos]
 			if c.Value == 0 {
 				line[j] = " "
 				j += 1
@@ -54,24 +59,24 @@ func (screen *Screen) Feed(c Char) (int, int) {
 	line := screen.Cursor.Line
 	col := screen.Cursor.Column
 	if screen.Cursor.Column + c.Width > screen.Columns {
-		screen.Chars[screen.Columns*(line+1) - 1].Continuation = true
+		screen.Cells[screen.Columns*(line+1) - 1].Continuation = true
 		screen.LineFeed()
 	}
 	pos := screen.Columns*screen.Cursor.Line + screen.Cursor.Column
-	screen.Chars[pos] = c
+	screen.Cells[pos].Char = c
 	screen.Cursor.Column += c.Width
 	return line, col
 }
 
 func (screen *Screen) IsLineContinuation(line int) bool {
-	return screen.Chars[screen.Columns*(line+1) - 1].Continuation
+	return screen.Cells[screen.Columns*(line+1) - 1].Continuation
 }
 
 func (screen *Screen) LineFeed() {
 	screen.Cursor.Column = 0
 	screen.Cursor.Line += 1
 	if screen.Cursor.Line == screen.Lines {
-		screen.Chars = append(screen.Chars[screen.Columns:], make([]Char, screen.Columns)...)
+		screen.Cells = append(screen.Cells[screen.Columns:], make([]Cell, screen.Columns)...)
 		screen.Cursor.Line -= 1
 	}
 }
@@ -84,7 +89,7 @@ func (screen *Screen) GoTo(line int, col int) {
 
 func (screen *Screen) IsLineEmpty(line int) bool {
 	for j := 0; j < screen.Columns; j++ {
-		if screen.Chars[line*screen.Columns+j].Value > 0 {
+		if screen.Cells[line*screen.Columns+j].Value > 0 {
 			return false
 		}
 	}
@@ -106,12 +111,12 @@ func (screen *Screen) Diff(pScreen *Screen) (diff []bool, loc []int) {
 	for i := 0; i < screen.Lines; i++ {
 		for j := 0; j < screen.Columns; j++ {
 			pos := screen.Columns*i + j
-			if screen.Chars[pos] != pScreen.Chars[pos] {
+			if screen.Cells[pos] != pScreen.Cells[pos] {
 				diff[i] = true
 				loc[i] = j
 				break
 			}
-			w := screen.Chars[pos].Width
+			w := screen.Cells[pos].Width
 			if w > 0 {
 				j += w - 1
 			}
